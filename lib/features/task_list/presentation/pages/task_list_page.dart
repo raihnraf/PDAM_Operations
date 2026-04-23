@@ -97,7 +97,7 @@ class _TaskTile extends StatelessWidget {
         child: ListTile(
           onTap: () {
             HapticHelper.selection();
-            context.push(AppRoutes.damageReport, extra: task.id);
+            context.push('${AppRoutes.damageReport}?taskId=${task.id}');
           },
           leading: CircleAvatar(
             backgroundColor: _statusColor(task.status),

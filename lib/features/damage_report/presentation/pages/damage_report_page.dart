@@ -72,7 +72,7 @@ class _DamageReportViewState extends State<_DamageReportView> {
                     label: 'OK',
                     onPressed: () {
                       context.pop();
-                      context.go(AppRoutes.taskMap);
+                      context.go(AppRoutes.home);
                     },
                   ),
                 ],

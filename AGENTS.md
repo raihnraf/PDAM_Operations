@@ -19,6 +19,8 @@
 1. **Interactive Task Map** — Peta interaktif dengan custom marker untuk lokasi pelanggan (meter reading, inspeksi pipa, perbaikan)
 2. **Swipe-to-Action Task List** — Daftar tugas harian dengan swipe kiri untuk "Eskalasi" dan swipe kanan untuk "Selesai"
 3. **Offline-First Damage Report** — Multi-step form (Stepper) untuk pelaporan kerusakan pipa dengan validasi ketat dan penyimpanan lokal via SharedPreferences
+4. **Profile & Sync** — Profil petugas dengan statistik kinerja, pengaturan, dan halaman sinkronisasi data offline
+5. **Bottom Navigation Shell** — Navigasi utama 4 tab (Tugas, Peta, Sinkronisasi, Profil) dengan IndexedStack untuk state preservation
 
 ---
 
@@ -72,9 +74,11 @@ lib/
 │   ├── app_router.dart
 │   └── app_routes.dart
 └── features/
+    ├── home/                   # Bottom navigation shell
     ├── task_map/               # Interactive map with markers
     ├── task_list/              # Swipeable task list
-    └── damage_report/          # Multi-step offline form
+    ├── damage_report/          # Multi-step offline form
+    └── profile/                # Officer profile & stats
         ├── data/
         │   ├── models/
         │   └── repositories/
@@ -92,6 +96,7 @@ lib/
 - **`core/` boleh di-import dari mana saja.**
 - **Feature tidak boleh import feature lain!** Kalau butuh shared logic, pindahkan ke `core/`.
 - **Pengecualian**: `task_list` re-use entity & repository dari `task_map` karena domain yang sama.
+- **Pengecualian**: `home` shell import semua feature pages untuk IndexedStack navigation.
 
 ---
 
@@ -158,6 +163,15 @@ dev_dependencies:
 - **Repo**: `MockDamageReportRepository` — save ke SharedPreferences, JSON serialization
 - **Cubit**: `DamageReportCubit` — setDamageType, setSeverity, setDescription, setLocation, submitReport, validate
 - **UI**: 4-step Stepper (Location → Damage Type → Details → Review)
+
+### Profile (`features/profile/`)
+- **Entity**: `OfficerProfile` (id, name, role, unit, tasksCompleted, tasksThisWeek, hoursInField, efficiencyScore, isOnDuty)
+- **Cubit**: `ProfileCubit` — loadProfile, toggleDutyStatus
+- **UI**: Profile header card, stats grid (3 cards), settings list, action buttons
+
+### Home Shell (`features/home/`)
+- **Pattern**: IndexedStack dengan BottomNavigationBar untuk state preservation
+- **Tabs**: Tugas (TaskList), Peta (TaskMap), Sinkronisasi, Profil
 
 ---
 
