@@ -1,0 +1,32 @@
+import '../errors/failures.dart';
+
+sealed class Result<T> {
+  const Result();
+
+  R fold<R>(
+    R Function(Failure failure) onError,
+    R Function(T data) onSuccess,
+  );
+}
+
+class Success<T> extends Result<T> {
+  final T data;
+  const Success(this.data);
+
+  @override
+  R fold<R>(
+    R Function(Failure failure) onError,
+    R Function(T data) onSuccess,
+  ) => onSuccess(data);
+}
+
+class FailureResult<T> extends Result<T> {
+  final Failure failure;
+  const FailureResult(this.failure);
+
+  @override
+  R fold<R>(
+    R Function(Failure failure) onError,
+    R Function(T data) onSuccess,
+  ) => onError(failure);
+}
