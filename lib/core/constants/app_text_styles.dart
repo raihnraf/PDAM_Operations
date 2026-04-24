@@ -43,6 +43,18 @@ class AppTextStyles {
     letterSpacing: 0.5,
   );
 
+  static const labelMedium = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.25,
+  );
+
+  static const labelSmall = TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.5,
+  );
+
   static const button = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,

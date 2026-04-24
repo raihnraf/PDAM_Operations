@@ -18,27 +18,91 @@ class DamageReportCubit extends Cubit<DamageReportState> {
   String _taskId = '';
   final List<String> _photoPaths = [];
 
-  void setDamageType(DamageType type) => _damageType = type;
-  void setSeverity(DamageSeverity severity) => _severity = severity;
-  void setDescription(String desc) => _description = desc;
+  void setDamageType(DamageType type) {
+    _damageType = type;
+    _emitFormUpdated();
+  }
+
+  void setSeverity(DamageSeverity severity) {
+    _severity = severity;
+    _emitFormUpdated();
+  }
+
+  void setDescription(String desc) {
+    _description = desc;
+    _emitFormUpdated();
+  }
+
   void setLocation(double lat, double lng) {
     _latitude = lat;
     _longitude = lng;
+    _emitFormUpdated();
   }
-  void setReporterName(String name) => _reporterName = name;
-  void setTaskId(String id) => _taskId = id;
-  void addPhoto(String path) => _photoPaths.add(path);
-  void removePhoto(String path) => _photoPaths.remove(path);
+
+  void setReporterName(String name) {
+    _reporterName = name;
+    _emitFormUpdated();
+  }
+
+  void setTaskId(String id) {
+    _taskId = id;
+    _emitFormUpdated();
+  }
+
+  void addPhoto(String path) {
+    _photoPaths.add(path);
+    _emitFormUpdated();
+  }
+
+  void removePhoto(String path) {
+    _photoPaths.remove(path);
+    _emitFormUpdated();
+  }
+
+  void _emitFormUpdated() {
+    if (state is! DamageReportLoading && state is! DamageReportSaved) {
+      emit(DamageReportFormUpdated(
+        damageType: _damageType,
+        severity: _severity,
+        description: _description,
+        latitude: _latitude,
+        longitude: _longitude,
+        reporterName: _reporterName,
+        taskId: _taskId,
+        photoPaths: List.unmodifiable(_photoPaths),
+      ));
+    }
+  }
 
   DamageType get damageType => _damageType;
   DamageSeverity get severity => _severity;
+  String get description => _description;
+  double get latitude => _latitude;
+  double get longitude => _longitude;
+  String get reporterName => _reporterName;
+  String get taskId => _taskId;
+  List<String> get photoPaths => List.unmodifiable(_photoPaths);
+
+  bool get hasLocation => _latitude != 0 || _longitude != 0;
 
   String? validate() {
     if (_reporterName.trim().isEmpty) return 'Nama petugas wajib diisi';
     if (_description.trim().isEmpty) return 'Deskripsi kerusakan wajib diisi';
     if (_description.trim().length < 20) return 'Deskripsi minimal 20 karakter';
-    if (_latitude == 0 && _longitude == 0) return 'Lokasi belum ditentukan';
+    if (!hasLocation) return 'Lokasi belum ditentukan';
     return null;
+  }
+
+  String? validateStep(int step) {
+    return switch (step) {
+      0 => _reporterName.trim().isEmpty ? 'Nama petugas wajib diisi' : null,
+      1 => null,
+      2 => _description.trim().length < 20
+          ? (_description.trim().isEmpty ? 'Deskripsi wajib diisi' : 'Deskripsi minimal 20 karakter')
+          : null,
+      3 => null,
+      _ => null,
+    };
   }
 
   Future<void> submitReport() async {
@@ -48,7 +112,7 @@ class DamageReportCubit extends Cubit<DamageReportState> {
       return;
     }
 
-    emit(DamageReportSaving());
+    emit(DamageReportLoading());
 
     final report = DamageReport(
       id: const Uuid().v4(),

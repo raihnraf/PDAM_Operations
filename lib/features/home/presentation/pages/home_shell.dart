@@ -5,6 +5,7 @@ import '../../../task_map/domain/repositories/task_repository.dart';
 import '../../../task_map/presentation/pages/task_map_page.dart';
 import '../../../task_list/presentation/pages/task_list_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import '../../../sync/presentation/pages/sync_page.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -19,7 +20,7 @@ class _HomeShellState extends State<HomeShell> {
   final _pages = const [
     TaskListPage(),
     TaskMapPage(),
-    _SyncPage(),
+    SyncPage(),
     ProfilePage(),
   ];
 
@@ -32,48 +33,6 @@ class _HomeShellState extends State<HomeShell> {
         bottomNavigationBar: AppBottomNav(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
-        ),
-      ),
-    );
-  }
-}
-
-class _SyncPage extends StatelessWidget {
-  const _SyncPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sinkronisasi Data')),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.cloud_done_outlined,
-              size: 80,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Semua data tersinkronisasi',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tidak ada data yang menunggu sinkronisasi',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 24),
-            AppButton(
-              label: 'Sinkronisasi Sekarang',
-              onPressed: () {},
-              icon: Icons.sync,
-              width: 200,
-            ),
-          ],
         ),
       ),
     );

@@ -7,6 +7,9 @@ class AppColors {
   static const primary = Color(0xFF1565C0);
   static const primaryLight = Color(0xFF1E88E5);
   static const primaryDark = Color(0xFF0D47A1);
+  static const primaryContainer = Color(0xFF0D3B66);
+  static const primaryFixedDim = Color(0xFFA4C9FC);
+  static const onPrimaryContainer = Color(0xFF81A6D7);
 
   // Secondary — Water Teal
   static const secondary = Color(0xFF00897B);
@@ -22,6 +25,7 @@ class AppColors {
   static const success = Color(0xFF2E7D32);
   static const warning = Color(0xFFF9A825);
   static const error = Color(0xFFC62828);
+  static const errorContainer = Color(0xFFFFDAD6);
   static const info = Color(0xFF0288D1);
 
   // Neutrals

@@ -29,26 +29,26 @@ class AppButton extends StatelessWidget {
     final effectiveBg = backgroundColor ?? theme.colorScheme.primary;
     final effectiveText = textColor ?? theme.colorScheme.onPrimary;
 
+    final child = _buildChild(theme, effectiveBg);
+
     if (isOutlined) {
-      return SizedBox(
-        width: width,
-        child: OutlinedButton(
-          onPressed: isLoading ? null : onPressed,
-          child: _buildChild(theme, effectiveBg),
+      return OutlinedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 48),
         ),
+        child: child,
       );
     }
 
-    return SizedBox(
-      width: width,
-      child: FilledButton(
-        onPressed: isLoading ? null : onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: effectiveBg,
-          foregroundColor: effectiveText,
-        ),
-        child: _buildChild(theme, effectiveBg),
+    return FilledButton(
+      onPressed: isLoading ? null : onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: effectiveBg,
+        foregroundColor: effectiveText,
+        minimumSize: const Size(double.infinity, 48),
       ),
+      child: child,
     );
   }
 
@@ -67,14 +67,22 @@ class AppButton extends StatelessWidget {
     }
     if (icon != null) {
       return Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 18),
           const SizedBox(width: 8),
-          Text(label, style: AppTextStyles.button),
+          Text(
+            label,
+            style: AppTextStyles.button,
+            textAlign: TextAlign.center,
+          ),
         ],
       );
     }
-    return Text(label, style: AppTextStyles.button);
+    return Text(
+      label,
+      style: AppTextStyles.button,
+      textAlign: TextAlign.center,
+    );
   }
 }
