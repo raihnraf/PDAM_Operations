@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../../injection_container.dart';
+import '../../../task_map/domain/entities/task.dart';
 import '../bloc/task_list_cubit.dart';
 import '../bloc/task_list_state.dart';
 import '../widgets/widgets.dart';
@@ -31,7 +32,10 @@ class _TaskListView extends StatelessWidget {
           return switch (state) {
             TaskListLoading() => const LoadingIndicator(),
             TaskListLoaded() => const _TaskListContent(),
-            TaskListError() => _ErrorView(message: state.message),
+            TaskListError() => ErrorStateView(
+              message: state.message,
+              onRetry: () => context.read<TaskListCubit>().loadTasks(),
+            ),
             _ => const SizedBox.shrink(),
           };
         },
@@ -45,23 +49,36 @@ class _TaskListContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<TaskListCubit>();
-    final tasks = cubit.getFilteredTasks();
-
     return Column(
       children: [
         const Padding(
-          padding: EdgeInsets.all(16),
+          padding: AppSpacing.allMd,
           child: FilterToggle(),
         ),
         Expanded(
-          child: tasks.isEmpty
-              ? _EmptyView()
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: tasks.length,
-                  itemBuilder: (_, i) => TaskCard(task: tasks[i]),
-                ),
+          child: BlocSelector<TaskListCubit, TaskListState, List<Task>>(
+            selector: (state) {
+              if (state is! TaskListLoaded) return [];
+              return switch (state.activeFilter) {
+                TaskFilter.pending => state.tasks
+                    .where((t) =>
+                        t.status == TaskStatus.pending ||
+                        t.status == TaskStatus.inProgress ||
+                        t.status == TaskStatus.escalated)
+                    .toList(),
+                TaskFilter.completed =>
+                  state.tasks.where((t) => t.status == TaskStatus.completed).toList(),
+              };
+            },
+            builder: (context, tasks) {
+              if (tasks.isEmpty) return const _EmptyView();
+              return ListView.builder(
+                padding: AppSpacing.horizontalMd,
+                itemCount: tasks.length,
+                itemBuilder: (_, i) => TaskCard(task: tasks[i]),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -69,17 +86,19 @@ class _TaskListContent extends StatelessWidget {
 }
 
 class _EmptyView extends StatelessWidget {
+  const _EmptyView();
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.allXl,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: AppSpacing.allLg,
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerLow,
                 shape: BoxShape.circle,
@@ -108,34 +127,6 @@ class _EmptyView extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  final String message;
-
-  const _ErrorView({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 16),
-          AppButton(
-            label: AppStrings.retry,
-            onPressed: () => context.read<TaskListCubit>().loadTasks(),
-          ),
-        ],
       ),
     );
   }

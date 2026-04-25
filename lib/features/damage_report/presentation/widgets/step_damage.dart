@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/haptic_helper.dart';
 import '../../domain/entities/damage_report.dart';
+import '../../domain/entities/damage_report_labels.dart';
 import '../bloc/damage_report_cubit.dart';
 import '../bloc/damage_report_state.dart';
 
@@ -28,7 +29,7 @@ class StepDamage extends StatelessWidget {
               children: DamageType.values.map((type) {
                 final isSelected = type == damageType;
                 return ChoiceChip(
-                  label: Text(_damageTypeLabel(type)),
+                  label: Text(type.label),
                   selected: isSelected,
                   onSelected: (_) {
                     HapticHelper.selection();
@@ -46,8 +47,8 @@ class StepDamage extends StatelessWidget {
               segments: DamageSeverity.values.map((s) {
                 return ButtonSegment(
                   value: s,
-                  label: Text(_severityLabel(s)),
-                  icon: Icon(_severityIcon(s)),
+                  label: Text(s.severityLabel),
+                  icon: Icon(s.severityIcon),
                 );
               }).toList(),
               selected: {severity},
@@ -71,33 +72,5 @@ class StepDamage extends StatelessWidget {
   DamageSeverity _getSeverity(BuildContext context, DamageReportState state) {
     if (state is DamageReportFormUpdated) return state.severity;
     return context.read<DamageReportCubit>().severity;
-  }
-
-  String _damageTypeLabel(DamageType type) {
-    return switch (type) {
-      DamageType.leak => 'Kebocoran',
-      DamageType.burst => 'Pipa Pecah',
-      DamageType.corrosion => 'Korosi',
-      DamageType.blockage => 'Penyumbatan',
-      DamageType.other => 'Lainnya',
-    };
-  }
-
-  String _severityLabel(DamageSeverity s) {
-    return switch (s) {
-      DamageSeverity.low => 'Rendah',
-      DamageSeverity.medium => 'Sedang',
-      DamageSeverity.high => 'Tinggi',
-      DamageSeverity.critical => 'Kritis',
-    };
-  }
-
-  IconData _severityIcon(DamageSeverity s) {
-    return switch (s) {
-      DamageSeverity.low => Icons.info_outline,
-      DamageSeverity.medium => Icons.warning_amber,
-      DamageSeverity.high => Icons.warning,
-      DamageSeverity.critical => Icons.error,
-    };
   }
 }

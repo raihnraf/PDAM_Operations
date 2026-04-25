@@ -74,4 +74,10 @@ class TaskListCubit extends Cubit<TaskListState> {
       (_) => loadTasks(),
     );
   }
+
+  void clearError() {
+    if (state is TaskListError) {
+      emit(TaskListInitial());
+    }
+  }
 }

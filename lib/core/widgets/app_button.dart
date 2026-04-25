@@ -32,23 +32,31 @@ class AppButton extends StatelessWidget {
     final child = _buildChild(theme, effectiveBg);
 
     if (isOutlined) {
-      return OutlinedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 48),
+      return Semantics(
+        button: true,
+        label: label,
+        child: OutlinedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 48),
+          ),
+          child: child,
         ),
-        child: child,
       );
     }
 
-    return FilledButton(
-      onPressed: isLoading ? null : onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: effectiveBg,
-        foregroundColor: effectiveText,
-        minimumSize: const Size(double.infinity, 48),
+    return Semantics(
+      button: true,
+      label: label,
+      child: FilledButton(
+        onPressed: isLoading ? null : onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: effectiveBg,
+          foregroundColor: effectiveText,
+          minimumSize: const Size(double.infinity, 48),
+        ),
+        child: child,
       ),
-      child: child,
     );
   }
 

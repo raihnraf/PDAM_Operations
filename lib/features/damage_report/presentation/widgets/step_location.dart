@@ -6,19 +6,11 @@ import '../bloc/damage_report_cubit.dart';
 import '../bloc/damage_report_state.dart';
 
 class StepLocation extends StatelessWidget {
-  final TextEditingController reporterCtrl;
-  final ValueChanged<String> onChanged;
-
-  const StepLocation({
-    super.key,
-    required this.reporterCtrl,
-    required this.onChanged,
-  });
+  const StepLocation({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cubit = context.read<DamageReportCubit>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,43 +20,55 @@ class StepLocation extends StatelessWidget {
           style: theme.textTheme.labelLarge,
         ),
         const SizedBox(height: 8),
-        TextFormField(
-          controller: reporterCtrl,
-          decoration: InputDecoration(
-            hintText: 'Masukkan nama lengkap',
-            filled: true,
-            fillColor: theme.colorScheme.surfaceContainerLowest,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
-            ),
-          ),
-          onChanged: onChanged,
+        BlocBuilder<DamageReportCubit, DamageReportState>(
+          builder: (context, state) {
+            final name = state is DamageReportFormUpdated ? state.reporterName : '';
+            return TextFormField(
+              initialValue: name,
+              decoration: InputDecoration(
+                labelText: 'Nama Petugas',
+                hintText: 'Masukkan nama lengkap',
+                filled: true,
+                fillColor: theme.colorScheme.surfaceContainerLowest,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                ),
+              ),
+              onChanged: (value) =>
+                  context.read<DamageReportCubit>().setReporterName(value),
+            );
+          },
         ),
         const SizedBox(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Lokasi GPS', style: theme.textTheme.labelLarge),
-            TextButton.icon(
-              onPressed: () {
-                HapticHelper.selection();
-                cubit.setLocation(-7.2575, 112.7521);
-              },
-              icon: const Icon(Icons.my_location, size: 16),
-              label: const Text('Update'),
-              style: TextButton.styleFrom(
-                foregroundColor: theme.colorScheme.primary,
-                padding: EdgeInsets.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            Semantics(
+              label: 'Update lokasi GPS',
+              child: TextButton.icon(
+                onPressed: () {
+                  HapticHelper.selection();
+                  context
+                      .read<DamageReportCubit>()
+                      .setLocation(-7.2575, 112.7521);
+                },
+                icon: const Icon(Icons.my_location, size: 16),
+                label: const Text('Update'),
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.primary,
+                  padding: EdgeInsets.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
               ),
             ),
           ],
@@ -72,9 +76,9 @@ class StepLocation extends StatelessWidget {
         const SizedBox(height: 8),
         BlocBuilder<DamageReportCubit, DamageReportState>(
           builder: (context, state) {
-            final lat = _getLatitude(context, state);
-            final lng = _getLongitude(context, state);
-            final hasLocation = lat != 0 || lng != 0;
+            final lat = state is DamageReportFormUpdated ? state.latitude : null;
+            final lng = state is DamageReportFormUpdated ? state.longitude : null;
+            final hasLocation = lat != null && lng != null;
 
             return Container(
               height: 180,
@@ -86,68 +90,73 @@ class StepLocation extends StatelessWidget {
                 ),
                 color: theme.colorScheme.surfaceContainerLowest,
               ),
-              child: hasLocation
-                  ? Stack(
-                      children: [
-                        Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.map,
-                                size: 48,
-                                color: theme.colorScheme.primary.withOpacity(0.5),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Surabaya, Jawa Timur',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Positioned(
-                          top: 50,
-                          left: 0,
-                          right: 0,
-                          child: Icon(
-                            Icons.location_on,
-                            color: AppColors.error,
-                            size: 40,
-                          ),
-                        ),
-                      ],
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+              child: Semantics(
+                label: hasLocation
+                    ? 'Lokasi: Surabaya, Jawa Timur. Lat: ${lat.toStringAsFixed(4)}, Lon: ${lng.toStringAsFixed(4)}'
+                    : 'Lokasi belum ditentukan. Tekan Update untuk mengambil lokasi.',
+                child: hasLocation
+                    ? Stack(
                         children: [
-                          Icon(
-                            Icons.location_on_outlined,
-                            size: 48,
-                            color: theme.colorScheme.primary,
+                          Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.map,
+                                  size: 48,
+                                  color: theme.colorScheme.primary.withOpacity(0.5),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Surabaya, Jawa Timur',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Tekan "Update" untuk mengambil lokasi',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                          const Positioned(
+                            top: 50,
+                            left: 0,
+                            right: 0,
+                            child: Icon(
+                              Icons.location_on,
+                              color: AppColors.error,
+                              size: 40,
                             ),
                           ),
                         ],
+                      )
+                    : Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.location_on_outlined,
+                              size: 48,
+                              color: theme.colorScheme.primary,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tekan "Update" untuk mengambil lokasi',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+              ),
             );
           },
         ),
         const SizedBox(height: 8),
         BlocBuilder<DamageReportCubit, DamageReportState>(
           builder: (context, state) {
-            final lat = _getLatitude(context, state);
-            final lng = _getLongitude(context, state);
-            if (lat == 0 && lng == 0) return const SizedBox.shrink();
+            final lat = state is DamageReportFormUpdated ? state.latitude : null;
+            final lng = state is DamageReportFormUpdated ? state.longitude : null;
+            if (lat == null || lng == null) return const SizedBox.shrink();
 
             return Text(
               'Lat: ${lat.toStringAsFixed(4)}° S, Lon: ${lng.toStringAsFixed(4)}° E',
@@ -159,15 +168,5 @@ class StepLocation extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  double _getLatitude(BuildContext context, DamageReportState state) {
-    if (state is DamageReportFormUpdated) return state.latitude;
-    return context.read<DamageReportCubit>().latitude;
-  }
-
-  double _getLongitude(BuildContext context, DamageReportState state) {
-    if (state is DamageReportFormUpdated) return state.longitude;
-    return context.read<DamageReportCubit>().longitude;
   }
 }

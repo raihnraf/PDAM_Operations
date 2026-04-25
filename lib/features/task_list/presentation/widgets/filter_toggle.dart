@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/constants/app_duration.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../bloc/task_list_cubit.dart';
 import '../bloc/task_list_state.dart';
 
@@ -17,7 +20,7 @@ class FilterToggle extends StatelessWidget {
             : TaskFilter.pending;
 
         return Container(
-          padding: const EdgeInsets.all(4),
+          padding: AppSpacing.allXs,
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(12),
@@ -26,7 +29,7 @@ class FilterToggle extends StatelessWidget {
             children: [
               Expanded(
                 child: _FilterButton(
-                  label: 'Menunggu',
+                  label: AppStrings.statusPending,
                   icon: Icons.pending_outlined,
                   isActive: activeFilter == TaskFilter.pending,
                   onTap: () => context.read<TaskListCubit>().setFilter(TaskFilter.pending),
@@ -34,7 +37,7 @@ class FilterToggle extends StatelessWidget {
               ),
               Expanded(
                 child: _FilterButton(
-                  label: 'Selesai',
+                  label: AppStrings.statusCompleted,
                   icon: Icons.check_circle_outline,
                   isActive: activeFilter == TaskFilter.completed,
                   onTap: () => context.read<TaskListCubit>().setFilter(TaskFilter.completed),
@@ -69,7 +72,7 @@ class _FilterButton extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppDuration.animationNormal,
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
           color: isActive ? theme.colorScheme.primary : Colors.transparent,

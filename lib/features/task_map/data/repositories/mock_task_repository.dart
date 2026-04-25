@@ -1,6 +1,7 @@
 import 'dart:math';
 import '../../../../core/utils/result.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/constants/constants.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/repositories/task_repository.dart';
 import '../models/mock_tasks.dart';
@@ -10,23 +11,23 @@ class MockTaskRepository implements TaskRepository {
 
   @override
   Future<Result<List<Task>>> getTasks() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(AppDuration.mockSlow);
     return Success(_tasks);
   }
 
   @override
   Future<Result<Task>> getTaskById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    final task = _tasks.firstWhere(
-      (t) => t.id == id,
-      orElse: () => throw const ServerFailure('Task tidak ditemukan'),
-    );
+    await Future.delayed(AppDuration.mockNormal);
+    final task = _tasks.where((t) => t.id == id).firstOrNull;
+    if (task == null) {
+      return const FailureResult(Failure('Task tidak ditemukan'));
+    }
     return Success(task);
   }
 
   @override
   Future<Result<Task>> updateTaskStatus(String id, TaskStatus status) async {
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(AppDuration.mockNormal);
     final index = _tasks.indexWhere((t) => t.id == id);
     if (index == -1) {
       return const FailureResult(Failure('Task tidak ditemukan'));
@@ -37,7 +38,7 @@ class MockTaskRepository implements TaskRepository {
 
   @override
   Future<Result<List<Task>>> getTasksByLocation(double lat, double lng, double radiusKm) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(AppDuration.mockSlow);
     final nearby = _tasks.where((task) {
       final distance = _haversine(lat, lng, task.latitude, task.longitude);
       return distance <= radiusKm;

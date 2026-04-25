@@ -223,17 +223,12 @@ void main() {
   });
 
   group('hasLocation', () {
-    test('returns false when latitude and longitude are 0', () {
+    test('returns false when latitude and longitude are null', () {
       expect(cubit.hasLocation, isFalse);
     });
 
-    test('returns true when latitude is non-zero', () {
-      cubit.setLocation(-6.0, 0);
-      expect(cubit.hasLocation, isTrue);
-    });
-
-    test('returns true when longitude is non-zero', () {
-      cubit.setLocation(0, 106.0);
+    test('returns true when both coordinates are set', () {
+      cubit.setLocation(-6.0, 106.0);
       expect(cubit.hasLocation, isTrue);
     });
   });
@@ -332,52 +327,72 @@ void main() {
       ],
     );
 
-    blocTest<DamageReportCubit, DamageReportState>(
+    test(
       'emits DamageReportLoading then DamageReportSaved when submission succeeds',
-      setUp: () {
-        cubit.setReporterName('John Doe');
-        cubit.setDamageType(DamageType.leak);
-        cubit.setSeverity(DamageSeverity.medium);
-        cubit.setDescription('This is a detailed damage description with sufficient length');
-        cubit.setLocation(-6.208763, 106.845599);
-        cubit.setTaskId('task-123');
+      () async {
         when(() => mockRepository.saveReport(any()))
             .thenAnswer((_) async => Success(validReport));
-      },
-      build: () => cubit,
-      act: (cubit) => cubit.submitReport(),
-      expect: () => [
-        isA<DamageReportLoading>(),
-        isA<DamageReportSaved>(),
-      ],
-      verify: (_) {
+        final c = DamageReportCubit(mockRepository);
+        c.setReporterName('John Doe');
+        c.setDamageType(DamageType.leak);
+        c.setSeverity(DamageSeverity.medium);
+        c.setDescription(
+            'This is a detailed damage description with sufficient length');
+        c.setLocation(-6.208763, 106.845599);
+        c.setTaskId('task-123');
+
+        expect(c.latitude, -6.208763);
+        expect(c.longitude, 106.845599);
+
+        final states = <DamageReportState>[];
+        final sub = c.stream.listen(states.add);
+        await c.submitReport();
+        await Future.delayed(Duration.zero);
+        await sub.cancel();
+        c.close();
+
+        expect(states, [
+          isA<DamageReportLoading>(),
+          isA<DamageReportSaved>(),
+        ]);
         verify(() => mockRepository.saveReport(any())).called(1);
       },
     );
 
-    blocTest<DamageReportCubit, DamageReportState>(
+    test(
       'emits DamageReportLoading then DamageReportError when submission fails',
-      setUp: () {
-        cubit.setReporterName('John Doe');
-        cubit.setDamageType(DamageType.leak);
-        cubit.setSeverity(DamageSeverity.medium);
-        cubit.setDescription('This is a detailed damage description with sufficient length');
-        cubit.setLocation(-6.208763, 106.845599);
-        cubit.setTaskId('task-123');
+      () async {
         when(() => mockRepository.saveReport(any())).thenAnswer(
           (_) async => const FailureResult(ServerFailure('Network error')),
         );
+        final c = DamageReportCubit(mockRepository);
+        c.setReporterName('John Doe');
+        c.setDamageType(DamageType.leak);
+        c.setSeverity(DamageSeverity.medium);
+        c.setDescription(
+            'This is a detailed damage description with sufficient length');
+        c.setLocation(-6.208763, 106.845599);
+        c.setTaskId('task-123');
+
+        expect(c.latitude, -6.208763);
+        expect(c.longitude, 106.845599);
+
+        final states = <DamageReportState>[];
+        final sub = c.stream.listen(states.add);
+        await c.submitReport();
+        await Future.delayed(Duration.zero);
+        await sub.cancel();
+        c.close();
+
+        expect(states, [
+          isA<DamageReportLoading>(),
+          isA<DamageReportError>().having(
+            (s) => s.message,
+            'message',
+            'Network error',
+          ),
+        ]);
       },
-      build: () => cubit,
-      act: (cubit) => cubit.submitReport(),
-      expect: () => [
-        isA<DamageReportLoading>(),
-        isA<DamageReportError>().having(
-          (s) => s.message,
-          'message',
-          'Network error',
-        ),
-      ],
     );
   });
 
@@ -401,8 +416,8 @@ void main() {
         expect(cubit.damageType, DamageType.leak);
         expect(cubit.severity, DamageSeverity.medium);
         expect(cubit.description, isEmpty);
-        expect(cubit.latitude, 0);
-        expect(cubit.longitude, 0);
+        expect(cubit.latitude, isNull);
+        expect(cubit.longitude, isNull);
         expect(cubit.reporterName, isEmpty);
         expect(cubit.taskId, isEmpty);
         expect(cubit.photoPaths, isEmpty);

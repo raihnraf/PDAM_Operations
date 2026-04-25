@@ -16,11 +16,12 @@ class DamageReportFormUpdated extends DamageReportState {
   final DamageType damageType;
   final DamageSeverity severity;
   final String description;
-  final double latitude;
-  final double longitude;
+  final double? latitude;
+  final double? longitude;
   final String reporterName;
   final String taskId;
   final List<String> photoPaths;
+  final int currentStep;
 
   const DamageReportFormUpdated({
     required this.damageType,
@@ -31,7 +32,32 @@ class DamageReportFormUpdated extends DamageReportState {
     required this.reporterName,
     required this.taskId,
     required this.photoPaths,
+    this.currentStep = 0,
   });
+
+  DamageReportFormUpdated copyWith({
+    DamageType? damageType,
+    DamageSeverity? severity,
+    String? description,
+    double? latitude,
+    double? longitude,
+    String? reporterName,
+    String? taskId,
+    List<String>? photoPaths,
+    int? currentStep,
+  }) {
+    return DamageReportFormUpdated(
+      damageType: damageType ?? this.damageType,
+      severity: severity ?? this.severity,
+      description: description ?? this.description,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      reporterName: reporterName ?? this.reporterName,
+      taskId: taskId ?? this.taskId,
+      photoPaths: photoPaths ?? this.photoPaths,
+      currentStep: currentStep ?? this.currentStep,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -43,6 +69,7 @@ class DamageReportFormUpdated extends DamageReportState {
         reporterName,
         taskId,
         photoPaths,
+        currentStep,
       ];
 }
 

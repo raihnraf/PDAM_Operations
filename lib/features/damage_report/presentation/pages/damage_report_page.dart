@@ -28,26 +28,15 @@ class DamageReportPage extends StatelessWidget {
   }
 }
 
-class _DamageReportView extends StatefulWidget {
+class _DamageReportView extends StatelessWidget {
   const _DamageReportView();
 
-  @override
-  State<_DamageReportView> createState() => _DamageReportViewState();
-}
-
-class _DamageReportViewState extends State<_DamageReportView> {
-  int _currentStep = 0;
-  final _reporterCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
-
-  static const _stepLabels = ['Lokasi', 'Jenis', 'Detail', 'Review'];
-
-  @override
-  void dispose() {
-    _reporterCtrl.dispose();
-    _descCtrl.dispose();
-    super.dispose();
-  }
+  static const _stepLabels = [
+    AppStrings.stepLocation,
+    AppStrings.stepDamage,
+    AppStrings.stepDetails,
+    AppStrings.stepReview,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +51,7 @@ class _DamageReportViewState extends State<_DamageReportView> {
                   IconButton(
                     icon: const Icon(Icons.arrow_back),
                     onPressed: () => context.pop(),
+                    tooltip: 'Kembali',
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -72,10 +62,11 @@ class _DamageReportViewState extends State<_DamageReportView> {
               ),
             ),
             Expanded(
-              child: BlocListener<DamageReportCubit, DamageReportState>(
+              child: BlocConsumer<DamageReportCubit, DamageReportState>(
                 listener: (context, state) {
                   if (state is DamageReportError) {
                     HapticHelper.error();
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(state.message),
@@ -85,6 +76,7 @@ class _DamageReportViewState extends State<_DamageReportView> {
                   }
                   if (state is DamageReportSaved) {
                     HapticHelper.success();
+                    if (!context.mounted) return;
                     showModalBottomSheet(
                       context: context,
                       isDismissible: false,
@@ -92,39 +84,43 @@ class _DamageReportViewState extends State<_DamageReportView> {
                     );
                   }
                 },
-                child: BlocBuilder<DamageReportCubit, DamageReportState>(
-                  builder: (context, state) {
-                    final isLoading = state is DamageReportLoading;
-                    return Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16),
+                builder: (context, state) {
+                  final isLoading = state is DamageReportLoading;
+                  final currentStep =
+                      state is DamageReportFormUpdated ? state.currentStep : 0;
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: AppSpacing.allMd,
+                        child: Semantics(
+                          label:
+                              'Langkah ${currentStep + 1} dari 4: ${_stepLabels[currentStep]}',
                           child: StepperIndicator(
-                            currentStep: _currentStep,
+                            currentStep: currentStep,
                             totalSteps: 4,
                             stepLabels: _stepLabels,
                           ),
                         ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: _buildStepContent(),
-                          ),
+                      ),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: AppSpacing.horizontalMd,
+                          child: _buildStepContent(currentStep),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          child: Column(
-                            children: [
-                              _buildActionButtons(isLoading),
-                              const SizedBox(height: 12),
-                              const OfflineBanner(),
-                            ],
-                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        child: Column(
+                          children: [
+                            _buildActionButtons(context, currentStep, isLoading),
+                            const SizedBox(height: 12),
+                            const OfflineBanner(),
+                          ],
                         ),
-                      ],
-                    );
-                  },
-                ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ],
@@ -133,42 +129,35 @@ class _DamageReportViewState extends State<_DamageReportView> {
     );
   }
 
-  Widget _buildStepContent() {
-    return switch (_currentStep) {
-      0 => StepLocation(
-          reporterCtrl: _reporterCtrl,
-          onChanged: (_) => setState(() {}),
-        ),
+  Widget _buildStepContent(int currentStep) {
+    return switch (currentStep) {
+      0 => const StepLocation(),
       1 => const StepDamage(),
-      2 => StepDetails(
-          descCtrl: _descCtrl,
-          onChanged: (_) => setState(() {}),
-        ),
-      3 => StepReview(reporterName: _reporterCtrl.text),
+      2 => const StepDetails(),
+      3 => const StepReview(),
       _ => const SizedBox.shrink(),
     };
   }
 
-  Widget _buildActionButtons(bool isLoading) {
-    final canContinue = _canContinue();
-    final isLastStep = _currentStep == 3;
+  Widget _buildActionButtons(BuildContext context, int currentStep, bool isLoading) {
+    final isLastStep = currentStep == 3;
 
     return Row(
       children: [
         Expanded(
           child: AppButton(
             label: isLastStep ? AppStrings.submit : 'Lanjut',
-            onPressed: canContinue && !isLoading ? _nextStep : null,
+            onPressed: isLoading ? null : () => _nextStep(context, currentStep),
             isLoading: isLoading,
             icon: isLastStep ? Icons.send : Icons.arrow_forward,
           ),
         ),
-        if (_currentStep > 0) ...[
+        if (currentStep > 0) ...[
           const SizedBox(width: 12),
           Expanded(
             child: AppButton(
               label: 'Kembali',
-              onPressed: isLoading ? null : _prevStep,
+              onPressed: isLoading ? null : () => _prevStep(context),
               isOutlined: true,
             ),
           ),
@@ -177,31 +166,21 @@ class _DamageReportViewState extends State<_DamageReportView> {
     );
   }
 
-  bool _canContinue() {
-    return switch (_currentStep) {
-      0 => _reporterCtrl.text.trim().isNotEmpty,
-      1 => true,
-      2 => _descCtrl.text.trim().length >= 20,
-      3 => true,
-      _ => false,
-    };
-  }
-
-  void _nextStep() {
-    if (_currentStep < 3) {
+  void _nextStep(BuildContext context, int currentStep) {
+    if (currentStep < 3) {
       HapticHelper.selection();
-      setState(() => _currentStep++);
+      context.read<DamageReportCubit>().goToNextStep();
     } else {
-      _submit();
+      _submit(context);
     }
   }
 
-  void _prevStep() {
+  void _prevStep(BuildContext context) {
     HapticHelper.selection();
-    setState(() => _currentStep--);
+    context.read<DamageReportCubit>().goToPrevStep();
   }
 
-  void _submit() {
+  void _submit(BuildContext context) {
     HapticHelper.confirm();
     context.read<DamageReportCubit>().submitReport();
   }

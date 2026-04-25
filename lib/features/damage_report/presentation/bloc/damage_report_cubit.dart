@@ -9,96 +9,134 @@ class DamageReportCubit extends Cubit<DamageReportState> {
 
   DamageReportCubit(this.repository) : super(DamageReportInitial());
 
-  DamageType _damageType = DamageType.leak;
-  DamageSeverity _severity = DamageSeverity.medium;
-  String _description = '';
-  double _latitude = 0;
-  double _longitude = 0;
-  String _reporterName = '';
-  String _taskId = '';
-  final List<String> _photoPaths = [];
-
   void setDamageType(DamageType type) {
-    _damageType = type;
-    _emitFormUpdated();
+    _emitIfForm((s) => s.copyWith(damageType: type));
   }
 
   void setSeverity(DamageSeverity severity) {
-    _severity = severity;
-    _emitFormUpdated();
+    _emitIfForm((s) => s.copyWith(severity: severity));
   }
 
   void setDescription(String desc) {
-    _description = desc;
-    _emitFormUpdated();
+    _emitIfForm((s) => s.copyWith(description: desc));
   }
 
   void setLocation(double lat, double lng) {
-    _latitude = lat;
-    _longitude = lng;
-    _emitFormUpdated();
+    _emitIfForm((s) => s.copyWith(latitude: lat, longitude: lng));
   }
 
   void setReporterName(String name) {
-    _reporterName = name;
-    _emitFormUpdated();
+    _emitIfForm((s) => s.copyWith(reporterName: name));
   }
 
   void setTaskId(String id) {
-    _taskId = id;
-    _emitFormUpdated();
+    _emitIfForm((s) => s.copyWith(taskId: id));
   }
 
   void addPhoto(String path) {
-    _photoPaths.add(path);
-    _emitFormUpdated();
+    _emitIfForm((s) {
+      final updated = List<String>.from(s.photoPaths)..add(path);
+      return s.copyWith(photoPaths: updated);
+    });
   }
 
   void removePhoto(String path) {
-    _photoPaths.remove(path);
-    _emitFormUpdated();
+    _emitIfForm((s) {
+      final updated = List<String>.from(s.photoPaths)..remove(path);
+      return s.copyWith(photoPaths: updated);
+    });
   }
 
-  void _emitFormUpdated() {
-    if (state is! DamageReportLoading && state is! DamageReportSaved) {
-      emit(DamageReportFormUpdated(
-        damageType: _damageType,
-        severity: _severity,
-        description: _description,
-        latitude: _latitude,
-        longitude: _longitude,
-        reporterName: _reporterName,
-        taskId: _taskId,
-        photoPaths: List.unmodifiable(_photoPaths),
-      ));
+  void goToNextStep() {
+    _emitIfForm((s) => s.copyWith(currentStep: s.currentStep + 1));
+  }
+
+  void goToPrevStep() {
+    _emitIfForm((s) => s.copyWith(currentStep: s.currentStep - 1));
+  }
+
+  void goToStep(int step) {
+    _emitIfForm((s) => s.copyWith(currentStep: step));
+  }
+
+  void _emitIfForm(DamageReportFormUpdated Function(DamageReportFormUpdated s) update) {
+    if (state is DamageReportFormUpdated) {
+      emit(update(state as DamageReportFormUpdated));
+    } else if (state is DamageReportInitial) {
+      emit(update(const DamageReportFormUpdated(
+        damageType: DamageType.leak,
+        severity: DamageSeverity.medium,
+        description: '',
+        latitude: null,
+        longitude: null,
+        reporterName: '',
+        taskId: '',
+        photoPaths: [],
+      )));
     }
   }
 
-  DamageType get damageType => _damageType;
-  DamageSeverity get severity => _severity;
-  String get description => _description;
-  double get latitude => _latitude;
-  double get longitude => _longitude;
-  String get reporterName => _reporterName;
-  String get taskId => _taskId;
-  List<String> get photoPaths => List.unmodifiable(_photoPaths);
+  DamageType get damageType {
+    final s = state;
+    return s is DamageReportFormUpdated ? s.damageType : DamageType.leak;
+  }
 
-  bool get hasLocation => _latitude != 0 || _longitude != 0;
+  DamageSeverity get severity {
+    final s = state;
+    return s is DamageReportFormUpdated ? s.severity : DamageSeverity.medium;
+  }
+
+  String get description {
+    final s = state;
+    return s is DamageReportFormUpdated ? s.description : '';
+  }
+
+  double? get latitude {
+    final s = state;
+    return s is DamageReportFormUpdated ? s.latitude : null;
+  }
+
+  double? get longitude {
+    final s = state;
+    return s is DamageReportFormUpdated ? s.longitude : null;
+  }
+
+  String get reporterName {
+    final s = state;
+    return s is DamageReportFormUpdated ? s.reporterName : '';
+  }
+
+  String get taskId {
+    final s = state;
+    return s is DamageReportFormUpdated ? s.taskId : '';
+  }
+
+  List<String> get photoPaths {
+    final s = state;
+    return s is DamageReportFormUpdated ? s.photoPaths : [];
+  }
+
+  int get currentStep {
+    final s = state;
+    return s is DamageReportFormUpdated ? s.currentStep : 0;
+  }
+
+  bool get hasLocation => latitude != null && longitude != null;
 
   String? validate() {
-    if (_reporterName.trim().isEmpty) return 'Nama petugas wajib diisi';
-    if (_description.trim().isEmpty) return 'Deskripsi kerusakan wajib diisi';
-    if (_description.trim().length < 20) return 'Deskripsi minimal 20 karakter';
+    if (reporterName.trim().isEmpty) return 'Nama petugas wajib diisi';
+    if (description.trim().isEmpty) return 'Deskripsi kerusakan wajib diisi';
+    if (description.trim().length < 20) return 'Deskripsi minimal 20 karakter';
     if (!hasLocation) return 'Lokasi belum ditentukan';
     return null;
   }
 
   String? validateStep(int step) {
     return switch (step) {
-      0 => _reporterName.trim().isEmpty ? 'Nama petugas wajib diisi' : null,
+      0 => reporterName.trim().isEmpty ? 'Nama petugas wajib diisi' : null,
       1 => null,
-      2 => _description.trim().length < 20
-          ? (_description.trim().isEmpty ? 'Deskripsi wajib diisi' : 'Deskripsi minimal 20 karakter')
+      2 => description.trim().length < 20
+          ? (description.trim().isEmpty ? 'Deskripsi wajib diisi' : 'Deskripsi minimal 20 karakter')
           : null,
       3 => null,
       _ => null,
@@ -112,19 +150,21 @@ class DamageReportCubit extends Cubit<DamageReportState> {
       return;
     }
 
+    final formState = state as DamageReportFormUpdated;
+
     emit(DamageReportLoading());
 
     final report = DamageReport(
       id: const Uuid().v4(),
-      taskId: _taskId,
-      reporterName: _reporterName.trim(),
-      damageType: _damageType,
-      severity: _severity,
-      latitude: _latitude,
-      longitude: _longitude,
-      description: _description.trim(),
+      taskId: formState.taskId,
+      reporterName: formState.reporterName.trim(),
+      damageType: formState.damageType,
+      severity: formState.severity,
+      latitude: formState.latitude!,
+      longitude: formState.longitude!,
+      description: formState.description.trim(),
       reportedAt: DateTime.now(),
-      photoPaths: List.from(_photoPaths),
+      photoPaths: List.from(formState.photoPaths),
     );
 
     final result = await repository.saveReport(report);
@@ -135,14 +175,12 @@ class DamageReportCubit extends Cubit<DamageReportState> {
   }
 
   void reset() {
-    _damageType = DamageType.leak;
-    _severity = DamageSeverity.medium;
-    _description = '';
-    _latitude = 0;
-    _longitude = 0;
-    _reporterName = '';
-    _taskId = '';
-    _photoPaths.clear();
     emit(DamageReportInitial());
+  }
+
+  void clearError() {
+    if (state is DamageReportError) {
+      emit(DamageReportInitial());
+    }
   }
 }

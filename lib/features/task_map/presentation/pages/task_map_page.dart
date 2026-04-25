@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/constants.dart';
 import '../../../../core/utils/haptic_helper.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../domain/entities/task.dart';
 import '../bloc/task_map_cubit.dart';
 import '../bloc/task_map_state.dart';
@@ -35,7 +36,10 @@ class _TaskMapView extends StatelessWidget {
                 tasks: state.tasks,
                 selectedId: state.selectedTaskId,
               ),
-            TaskMapError() => _ErrorView(message: state.message),
+            TaskMapError() => ErrorStateView(
+              message: state.message,
+              onRetry: () => context.read<TaskMapCubit>().loadTasks(),
+            ),
             _ => const SizedBox.shrink(),
           };
         },
@@ -102,8 +106,8 @@ class _MapContentState extends State<_MapContent> {
       );
     }).toList();
 
-    final hasSiteCard = _nextPendingTask != null;
-    final fabBottom = hasSiteCard ? 280.0 : 16.0;
+    final pendingTask = _nextPendingTask;
+    final fabBottom = pendingTask != null ? 280.0 : 16.0;
 
     return Stack(
       children: [
@@ -140,25 +144,20 @@ class _MapContentState extends State<_MapContent> {
             ),
           ),
         ),
-        if (hasSiteCard)
+        if (pendingTask != null)
           Positioned(
             bottom: 16,
             left: 0,
             right: 0,
             child: NavigateToSiteCard(
-              task: _nextPendingTask!,
+              task: pendingTask,
               onTap: () {
                 HapticHelper.selection();
                 _mapController.move(
-                  LatLng(
-                    _nextPendingTask!.latitude,
-                    _nextPendingTask!.longitude,
-                  ),
+                  LatLng(pendingTask.latitude, pendingTask.longitude),
                   15,
                 );
-                context
-                    .read<TaskMapCubit>()
-                    .selectTask(_nextPendingTask!.id);
+                context.read<TaskMapCubit>().selectTask(pendingTask.id);
               },
             ),
           ),
@@ -184,8 +183,8 @@ class _TaskMarker extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(8),
+          duration: AppDuration.animationNormal,
+          padding: AppSpacing.allSm,
           decoration: BoxDecoration(
             color: _markerBgColor(task),
             border: Border.all(
@@ -301,31 +300,6 @@ class _LocateMeFAB extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  final String message;
-
-  const _ErrorView({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-          const SizedBox(height: 16),
-          Text(message, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: () => context.read<TaskMapCubit>().loadTasks(),
-            child: const Text('Retry'),
-          ),
-        ],
       ),
     );
   }

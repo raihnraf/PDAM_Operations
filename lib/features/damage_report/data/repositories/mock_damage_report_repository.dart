@@ -1,25 +1,32 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/utils/secure_storage.dart';
+import '../../../../core/constants/constants.dart';
 import '../../domain/entities/damage_report.dart';
 import '../../domain/repositories/damage_report_repository.dart';
 
 class MockDamageReportRepository implements DamageReportRepository {
   static const _key = 'pending_damage_reports';
+  final SecureStorage _secureStorage;
+
+  MockDamageReportRepository({required SecureStorage secureStorage})
+      : _secureStorage = secureStorage;
 
   @override
   Future<Result<DamageReport>> saveReport(DamageReport report) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(AppDuration.mockSlow);
     try {
-      final prefs = await SharedPreferences.getInstance();
       final reports = await getPendingReports();
       final list = reports.fold(
         (_) => <DamageReport>[],
         (data) => data,
       );
       list.add(report);
-      await prefs.setString(_key, jsonEncode(list.map((r) => _toJson(r)).toList()));
+      await _secureStorage.write(
+        key: _key,
+        value: jsonEncode(list.map((r) => _toJson(r)).toList()),
+      );
       return Success(report);
     } catch (e) {
       return FailureResult(const Failure('Gagal menyimpan laporan'));
@@ -28,10 +35,9 @@ class MockDamageReportRepository implements DamageReportRepository {
 
   @override
   Future<Result<List<DamageReport>>> getPendingReports() async {
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(AppDuration.mockNormal);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final data = prefs.getString(_key);
+      final data = await _secureStorage.read(key: _key);
       if (data == null) return Success([]);
       final jsonList = jsonDecode(data) as List;
       final reports = jsonList.map((j) => _fromJson(j)).toList();
@@ -43,10 +49,9 @@ class MockDamageReportRepository implements DamageReportRepository {
 
   @override
   Future<Result<void>> syncPendingReports() async {
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(AppDuration.mockSync);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_key);
+      await _secureStorage.delete(key: _key);
       return Success(null);
     } catch (e) {
       return FailureResult(const Failure('Gagal sinkronisasi'));

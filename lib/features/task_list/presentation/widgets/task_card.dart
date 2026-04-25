@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import '../../../../core/constants/constants.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/haptic_helper.dart';
+import '../../../../core/utils/task_status_config.dart';
+import '../../../../core/widgets/widgets.dart';
 import '../../../../routing/app_routes.dart';
 import '../../../task_map/domain/entities/task.dart';
 import '../bloc/task_list_cubit.dart';
@@ -17,10 +21,11 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isActing = _isActing(context);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+    return Semantics(
+      label: 'Tugas ${task.customerName}. ${_taskTitle(task)}. Status: ${_statusLabel(task.status)}. Geser kanan untuk selesai, geser kiri untuk eskalasi.',
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
@@ -64,7 +69,7 @@ class TaskCard extends StatelessWidget {
                   _buildHeader(context),
                   const Divider(height: 1),
                   Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: AppSpacing.allMd,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -75,33 +80,32 @@ class TaskCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        _InfoChip(
+                        TaskInfoChip(
                           icon: Icons.location_on_outlined,
                           label: task.address,
                           color: theme.colorScheme.primary,
+                          expandLabel: true,
                         ),
                         const SizedBox(height: 6),
                         Row(
                           children: [
                             Expanded(
-                              child: _InfoChip(
+                              child: TaskInfoChip(
                                 icon: Icons.calendar_today_outlined,
                                 label: _formatDate(task.scheduledDate),
                                 color: theme.colorScheme.onSurfaceVariant,
+                                expandLabel: true,
                               ),
                             ),
                             const SizedBox(width: 8),
-                            _TypeChip(type: task.type),
+                            TaskTypeChip(type: task.type),
                           ],
                         ),
                         if (task.notes != null && task.notes!.isNotEmpty) ...[
                           const SizedBox(height: 10),
                           _NotesCard(notes: task.notes!),
                         ],
-                        if (isActing) ...[
-                          const SizedBox(height: 12),
-                          const LinearProgressIndicator(),
-                        ],
+                        _ActingProgressIndicator(taskId: task.id),
                       ],
                     ),
                   ),
@@ -111,12 +115,22 @@ class TaskCard extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
+  }
+
+  String _statusLabel(TaskStatus status) {
+    return switch (status) {
+      TaskStatus.pending => AppStrings.statusPending,
+      TaskStatus.inProgress => AppStrings.statusInProgress,
+      TaskStatus.escalated => AppStrings.statusEscalated,
+      TaskStatus.completed => AppStrings.statusCompleted,
+    };
   }
 
   Widget _buildHeader(BuildContext context) {
     final theme = Theme.of(context);
-    final statusConfig = _statusConfig(task.status);
+    final statusConfig = taskStatusConfig(task.status);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -131,7 +145,7 @@ class TaskCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _StatusDot(status: task.status),
+          TaskStatusDot(status: task.status),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -143,7 +157,7 @@ class TaskCard extends StatelessWidget {
               ),
             ),
           ),
-          _StatusBadge(status: task.status),
+          TaskStatusBadge(status: task.status),
         ],
       ),
     );
@@ -174,219 +188,27 @@ class TaskCard extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('dd MMM yyyy', 'id_ID').format(date);
-  }
-
-  bool _isActing(BuildContext context) {
-    final state = context.read<TaskListCubit>().state;
-    if (state is! TaskListLoaded) return false;
-    return state.actingTaskId == task.id;
-  }
-
-  ({Color bgColor, Color textColor}) _statusConfig(TaskStatus status) {
-    return switch (status) {
-      TaskStatus.pending => (
-          bgColor: const Color(0xFFFFF8E1),
-          textColor: const Color(0xFF7A6500),
-        ),
-      TaskStatus.inProgress => (
-          bgColor: const Color(0xFFE3F2FD),
-          textColor: const Color(0xFF1565C0),
-        ),
-      TaskStatus.escalated => (
-          bgColor: const Color(0xFFFFF3E0),
-          textColor: const Color(0xFFE65100),
-        ),
-      TaskStatus.completed => (
-          bgColor: const Color(0xFFE8F5E9),
-          textColor: const Color(0xFF2E7D32),
-        ),
-    };
+    return DateFormatter.formatDate(date);
   }
 }
 
-class _StatusDot extends StatelessWidget {
-  final TaskStatus status;
-  const _StatusDot({required this.status});
+class _ActingProgressIndicator extends StatelessWidget {
+  final String taskId;
+  const _ActingProgressIndicator({required this.taskId});
 
   @override
   Widget build(BuildContext context) {
-    final (color, showPulse) = switch (status) {
-      TaskStatus.pending => (const Color(0xFFF9A825), true),
-      TaskStatus.inProgress => (AppColors.info, true),
-      TaskStatus.escalated => (AppColors.accent, false),
-      TaskStatus.completed => (AppColors.success, false),
-    };
-
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        if (showPulse)
-          Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-          ),
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 1.5),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  final TaskStatus status;
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final (color, label, icon) = switch (status) {
-      TaskStatus.pending => (
-          const Color(0xFFF9A825),
-          'Menunggu',
-          Icons.schedule_outlined,
-        ),
-      TaskStatus.inProgress => (
-          AppColors.info,
-          'Dikerjakan',
-          Icons.hourglass_top,
-        ),
-      TaskStatus.escalated => (
-          AppColors.accent,
-          'Eskalasi',
-          Icons.warning_amber_rounded,
-        ),
-      TaskStatus.completed => (
-          AppColors.success,
-          'Selesai',
-          Icons.check_circle_outline,
-        ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: Colors.white),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 14, color: color.withOpacity(0.7)),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _TypeChip extends StatelessWidget {
-  final TaskType type;
-  const _TypeChip({required this.type});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final (color, label, icon) = switch (type) {
-      TaskType.meterReading => (
-          const Color(0xFF7B1FA2),
-          'Meter',
-          Icons.speed_outlined,
-        ),
-      TaskType.pipeInspection => (
-          AppColors.secondary,
-          'Inspeksi',
-          Icons.visibility_outlined,
-        ),
-      TaskType.repair => (
-          AppColors.accent,
-          'Perbaikan',
-          Icons.build_outlined,
-        ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 3),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
+    return BlocSelector<TaskListCubit, TaskListState, String?>(
+      selector: (state) => state is TaskListLoaded ? state.actingTaskId : null,
+      builder: (context, actingTaskId) {
+        if (actingTaskId == taskId) {
+          return const Padding(
+            padding: EdgeInsets.only(top: 12),
+            child: LinearProgressIndicator(),
+          );
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 }

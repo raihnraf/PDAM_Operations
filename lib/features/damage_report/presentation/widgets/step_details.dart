@@ -5,14 +5,7 @@ import '../bloc/damage_report_cubit.dart';
 import '../bloc/damage_report_state.dart';
 
 class StepDetails extends StatelessWidget {
-  final TextEditingController descCtrl;
-  final ValueChanged<String> onChanged;
-
-  const StepDetails({
-    super.key,
-    required this.descCtrl,
-    required this.onChanged,
-  });
+  const StepDetails({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,28 +16,35 @@ class StepDetails extends StatelessWidget {
       children: [
         Text('Deskripsi Kerusakan', style: theme.textTheme.labelLarge),
         const SizedBox(height: 8),
-        TextFormField(
-          controller: descCtrl,
-          maxLines: 4,
-          decoration: InputDecoration(
-            hintText: 'Jelaskan detail kerusakan yang ditemukan...',
-            alignLabelWithHint: true,
-            filled: true,
-            fillColor: theme.colorScheme.surfaceContainerLowest,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
-            ),
-          ),
-          onChanged: onChanged,
+        BlocBuilder<DamageReportCubit, DamageReportState>(
+          builder: (context, state) {
+            final desc = state is DamageReportFormUpdated ? state.description : '';
+            return TextFormField(
+              initialValue: desc,
+              maxLines: 4,
+              decoration: InputDecoration(
+                labelText: 'Deskripsi Kerusakan',
+                hintText: 'Jelaskan detail kerusakan yang ditemukan...',
+                alignLabelWithHint: true,
+                filled: true,
+                fillColor: theme.colorScheme.surfaceContainerLowest,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                ),
+              ),
+              onChanged: (value) =>
+                  context.read<DamageReportCubit>().setDescription(value),
+            );
+          },
         ),
         const SizedBox(height: 24),
         Text('Foto Bukti', style: theme.textTheme.labelLarge),
@@ -113,7 +113,8 @@ class StepDetails extends StatelessWidget {
         const SizedBox(height: 16),
         BlocBuilder<DamageReportCubit, DamageReportState>(
           builder: (context, state) {
-            final photos = _getPhotos(context, state);
+            final photos =
+                state is DamageReportFormUpdated ? state.photoPaths : [];
             if (photos.isEmpty) return const SizedBox.shrink();
 
             return Wrap(
@@ -164,10 +165,5 @@ class StepDetails extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  List<String> _getPhotos(BuildContext context, DamageReportState state) {
-    if (state is DamageReportFormUpdated) return state.photoPaths;
-    return context.read<DamageReportCubit>().photoPaths;
   }
 }

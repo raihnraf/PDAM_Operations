@@ -59,4 +59,11 @@ class SyncCubit extends Cubit<SyncState> {
       },
     );
   }
+
+  void clearSyncError() {
+    final currentState = state;
+    if (currentState is SyncLoaded && currentState.syncError != null) {
+      emit(currentState.copyWith(syncError: null));
+    }
+  }
 }

@@ -31,4 +31,10 @@ class TaskMapCubit extends Cubit<TaskMapState> {
       (_) => loadTasks(),
     );
   }
+
+  void clearError() {
+    if (state is TaskMapError) {
+      emit(TaskMapInitial());
+    }
+  }
 }

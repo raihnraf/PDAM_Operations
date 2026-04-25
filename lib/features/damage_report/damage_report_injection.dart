@@ -4,6 +4,8 @@ import 'domain/repositories/damage_report_repository.dart';
 import 'presentation/bloc/damage_report_cubit.dart';
 
 void initDamageReport() {
-  sl.registerLazySingleton<DamageReportRepository>(() => MockDamageReportRepository());
+  sl.registerLazySingleton<DamageReportRepository>(
+    () => MockDamageReportRepository(secureStorage: sl()),
+  );
   sl.registerFactory<DamageReportCubit>(() => DamageReportCubit(sl()));
 }

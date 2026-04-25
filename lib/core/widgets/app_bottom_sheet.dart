@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/constants.dart';
 
 class AppBottomSheet extends StatelessWidget {
   final Widget child;
@@ -25,7 +26,7 @@ class AppBottomSheet extends StatelessWidget {
           children: [
             if (showDragHandle)
               Container(
-                margin: const EdgeInsets.only(top: 12),
+                margin: AppSpacing.topMd,
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(

@@ -671,9 +671,12 @@ void main() {
 
 | Priority | Issue | Why It Matters |
 |----------|-------|----------------|
-| ✅ **1** | **Add Comprehensive Tests** | Tests created for core utilities (Result, Failures), widgets (AppButton, LoadingIndicator), and Cubits. 83+ tests passing. |
-| 🔴 **2** | **Add Global Error Handler** | App will crash on uncaught async errors. Bad UX, loses user data. |
-| 🟠 **3** | **Secure Storage Setup** | Currently using unencrypted SharedPreferences. Security risk for sensitive data. |
+| ✅ **1** | **Add Comprehensive Tests** | Tests created for core utilities (Result, Failures), widgets (AppButton, LoadingIndicator), and Cubits (damage_report, task_list). 83+ tests passing. |
+| ✅ **2** | **Add Global Error Handler** | Implemented in `lib/app.dart` with FlutterError.onError, PlatformDispatcher.onError, and runZonedGuarded. |
+| ✅ **3** | **Secure Storage Setup** | Implemented `SecureStorage` service with `flutter_secure_storage`. Repositories migrated from SharedPreferences. |
+| ✅ **4** | **Add Error State Auto-Reset** | Added `clearError()` method to TaskMapCubit, TaskListCubit, DamageReportCubit, and `clearSyncError()` to SyncCubit. Users can now dismiss stale error states. |
+
+
 
 ---
 
@@ -692,14 +695,25 @@ void main() {
 
 ### Quick Win Checklist
 
-- [ ] Add `AppSpacing` constants for consistent padding
-- [ ] Replace nested `BlocListener` + `BlocBuilder` with `BlocConsumer`
-- [ ] Add `const` to `_pages` list in `home_shell.dart`
-- [ ] Extract magic numbers to named constants
-- [ ] Add `Semantics` widgets for accessibility
-- [ ] Add global error handler in `main.dart`
-- [ ] Create basic unit tests for Cubits
-- [ ] Add secure storage for sensitive data
+- [x] Add `AppSpacing` constants for consistent padding
+- [x] Replace nested `BlocListener` + `BlocBuilder` with `BlocConsumer` in `damage_report_page.dart`
+- [x] Add `const` to `_pages` list in `home_shell.dart` (already const)
+- [x] Extract magic numbers to named constants (`AppSpacing`, `AppRadius`, `AppShadow`, `AppDuration`, `AppStrings`)
+- [x] Add global error handler in `app.dart` (already implemented: `FlutterError.onError`, `PlatformDispatcher.instance.onError`, `runZonedGuarded`)
+- [x] Add secure storage for sensitive data (already implemented: `SecureStorage` service with `flutter_secure_storage`)
+- [x] Create basic unit tests for Cubits (already implemented: damage_report, task_list cubit tests + core tests)
+- [x] Add error state auto-reset / `clearError()` to all Cubits
+- [x] Centralize animation durations (`AppDuration` already existed — replaced 2 hardcoded `Duration(milliseconds: 200)` in `task_map_page.dart` and `filter_toggle.dart`)
+- [x] Add platform-appropriate scroll physics (wrapped `MaterialApp` in `ScrollConfiguration` with `BouncingScrollPhysics` in `app.dart`)
+- [x] Add `Semantics` widgets for accessibility
+  - Form inputs: added `labelText` to `step_location.dart` and `step_details.dart` TextFormField
+  - Stepper: wrapped with `Semantics(label: 'Langkah X dari 4: ...')` in `damage_report_page.dart`
+  - Buttons: wrapped `AppButton` with `Semantics(button: true, label: ...)` in `app_button.dart`
+  - Task cards: added `Semantics(label: ...)` with task details and swipe hints in `task_card.dart`
+  - Profile header: added `Semantics(header: true, label: ...)` in `profile_page.dart`
+  - GPS button: wrapped with `Semantics(label: 'Update lokasi GPS')` in `step_location.dart`
+  - GPS map preview: wrapped with `Semantics(label: ...)` showing location status in `step_location.dart`
+  - Back button: added `tooltip: 'Kembali'` in `damage_report_page.dart`
 
 ---
 
