@@ -91,7 +91,7 @@ class ProfileActivityTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: activity.color.withOpacity(0.1),
+              color: activity.color.withAlpha(26),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(activity.icon, size: 18, color: activity.color),

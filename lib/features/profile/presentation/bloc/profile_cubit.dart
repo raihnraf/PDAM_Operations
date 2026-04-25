@@ -5,22 +5,22 @@ import 'profile_state.dart';
 class ProfileCubit extends Cubit<ProfileState> {
   final ProfileRepository repository;
 
-  ProfileCubit(this.repository) : super(ProfileInitial());
+  ProfileCubit(this.repository) : super(const ProfileState.initial());
 
   Future<void> loadProfile() async {
-    emit(ProfileLoading());
+    emit(const ProfileState.loading());
     final result = await repository.getProfile();
     result.fold(
-      (failure) => emit(ProfileError(failure.message)),
-      (profile) => emit(ProfileLoaded(profile)),
+      (failure) => emit(ProfileState.error(failure.message)),
+      (profile) => emit(ProfileState.loaded(profile)),
     );
   }
 
   Future<void> toggleDutyStatus(bool isOnDuty) async {
     final result = await repository.updateDutyStatus(isOnDuty);
     result.fold(
-      (failure) => emit(ProfileError(failure.message)),
-      (profile) => emit(ProfileLoaded(profile)),
+      (failure) => emit(ProfileState.error(failure.message)),
+      (profile) => emit(ProfileState.loaded(profile)),
     );
   }
 }

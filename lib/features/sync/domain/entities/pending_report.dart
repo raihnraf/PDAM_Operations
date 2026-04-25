@@ -1,18 +1,14 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../damage_report/domain/entities/damage_report.dart';
 
-class PendingReport extends Equatable {
-  final String id;
-  final String type;
-  final String title;
-  final DateTime savedAt;
+part 'pending_report.freezed.dart';
 
-  const PendingReport({
-    required this.id,
-    required this.type,
-    required this.title,
-    required this.savedAt,
-  });
-
-  @override
-  List<Object?> get props => [id, type, title, savedAt];
+@freezed
+class PendingReport with _$PendingReport {
+  const factory PendingReport({
+    required String id,
+    required DamageType type,
+    required String title,
+    required DateTime savedAt,
+  }) = _PendingReport;
 }

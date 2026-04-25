@@ -17,7 +17,7 @@ class TaskStatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withAlpha(77),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -30,9 +30,8 @@ class TaskStatusBadge extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: Colors.white,
-              fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.3,
             ),

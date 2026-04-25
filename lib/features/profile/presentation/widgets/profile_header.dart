@@ -32,7 +32,7 @@ class ProfileHeader extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.primary, AppColors.primary.withOpacity(0.75)],
+            colors: [AppColors.primary, AppColors.primaryOverlay75],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -42,7 +42,7 @@ class ProfileHeader extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primaryOverlay30,
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -90,9 +90,8 @@ class ProfileHeader extends StatelessWidget {
                           Expanded(
                             child: Text(
                               name,
-                              style: const TextStyle(
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 color: Colors.white,
-                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                               maxLines: 1,
@@ -105,9 +104,8 @@ class ProfileHeader extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         role,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.85),
-                          fontSize: 14,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.whiteOverlay85,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -146,7 +144,7 @@ class _AvatarWidget extends StatelessWidget {
       height: 72,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withOpacity(0.2),
+        color: AppColors.whiteOverlay20,
         border: Border.all(color: Colors.white, width: 2),
       ),
       child: const Icon(Icons.person, size: 36, color: Colors.white),
@@ -161,11 +159,12 @@ class ProfileStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isOnDuty ? Colors.greenAccent : Colors.orangeAccent;
+    final theme = Theme.of(context);
+    final color = isOnDuty ? AppColors.secondary : AppColors.accent;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: AppColors.whiteOverlay20,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -179,8 +178,7 @@ class ProfileStatusBadge extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             isOnDuty ? AppStrings.profileStatusOnDuty : AppStrings.profileStatusOffline,
-            style: TextStyle(
-              fontSize: 12,
+            style: theme.textTheme.labelMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: color,
             ),
@@ -202,7 +200,7 @@ class ProfileHeaderChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: AppColors.whiteOverlay15,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -212,9 +210,8 @@ class ProfileHeaderChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: Colors.white,
-              fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
           ),

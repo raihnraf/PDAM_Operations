@@ -30,7 +30,7 @@ class AppBottomSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                  color: Theme.of(context).colorScheme.outline.withAlpha(77),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

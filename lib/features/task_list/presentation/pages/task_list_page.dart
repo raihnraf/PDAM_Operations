@@ -106,7 +106,7 @@ class _EmptyView extends StatelessWidget {
               child: Icon(
                 Icons.task_alt,
                 size: 56,
-                color: theme.colorScheme.primary.withOpacity(0.6),
+                color: theme.colorScheme.primary.withAlpha(153),
               ),
             ),
             const SizedBox(height: 20),

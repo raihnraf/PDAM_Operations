@@ -135,8 +135,8 @@ class _MapContentState extends State<_MapContent> {
                   end: Alignment.topCenter,
                   stops: const [0.0, 0.3, 1.0],
                   colors: [
-                    Theme.of(context).colorScheme.surface.withOpacity(0.85),
-                    Theme.of(context).colorScheme.surface.withOpacity(0.1),
+                    Theme.of(context).colorScheme.surface.withAlpha(217),
+                    Theme.of(context).colorScheme.surface.withAlpha(26),
                     Colors.transparent,
                   ],
                 ),
@@ -194,7 +194,7 @@ class _TaskMarker extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: AppColors.blackOverlay15,
                 blurRadius: 6,
                 offset: const Offset(0, 3),
               ),
@@ -216,7 +216,7 @@ class _TaskMarker extends StatelessWidget {
             width: 8,
             height: 3,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
+              color: AppColors.blackOverlay30,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -237,7 +237,7 @@ class _TaskMarker extends StatelessWidget {
     if (task.status == TaskStatus.escalated) return AppColors.errorContainer;
     return switch (task.type) {
       TaskType.meterReading => AppColors.primaryFixedDim,
-      TaskType.pipeInspection => AppColors.secondary.withOpacity(0.6),
+      TaskType.pipeInspection => AppColors.secondaryOverlay60,
       TaskType.repair => AppColors.accentLight,
     };
   }
@@ -277,7 +277,7 @@ class _LocateMeFAB extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: AppColors.blackOverlay20,
             blurRadius: 0,
             offset: const Offset(0, 4),
           ),

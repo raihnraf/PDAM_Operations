@@ -18,7 +18,7 @@ class TaskStatusDot extends StatelessWidget {
             width: 16,
             height: 16,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withAlpha(51),
               shape: BoxShape.circle,
             ),
           ),

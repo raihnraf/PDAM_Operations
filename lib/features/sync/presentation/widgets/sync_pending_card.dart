@@ -41,7 +41,7 @@ class SyncPendingListHeader extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primaryOverlay10,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -106,7 +106,7 @@ class SyncEmptyState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primaryOverlay10,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -167,7 +167,7 @@ class SyncPendingCard extends StatelessWidget {
                         width: 42,
                         height: 42,
                         decoration: BoxDecoration(
-                          color: severityColor.withOpacity(0.1),
+                          color: severityColor.withAlpha(26),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
@@ -205,10 +205,10 @@ class SyncPendingCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.accent.withOpacity(0.1),
+                          color: AppColors.accentOverlay10,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: AppColors.accent.withOpacity(0.3),
+                            color: AppColors.accentOverlay30,
                           ),
                         ),
                         child: Row(
@@ -258,34 +258,26 @@ class SyncPendingCard extends StatelessWidget {
     );
   }
 
-  static Color _getSeverityColor(String type) {
-    return switch (type.toLowerCase()) {
-      'critical' => AppColors.error,
-      'high' => AppColors.accent,
-      'medium' => AppColors.warning,
+  static Color _getSeverityColor(DamageType type) {
+    return switch (type) {
+      DamageType.burst => AppColors.error,
+      DamageType.leak => AppColors.accent,
+      DamageType.corrosion => AppColors.warning,
       _ => AppColors.secondary,
     };
   }
 
-  static IconData _getIconForType(String type) {
-    return switch (type.toLowerCase()) {
-      'leak' => Icons.water_drop_outlined,
-      'burst' => Icons.auto_fix_high_outlined,
-      'corrosion' => Icons.science_outlined,
-      'blockage' => Icons.block_outlined,
+  static IconData _getIconForType(DamageType type) {
+    return switch (type) {
+      DamageType.leak => Icons.water_drop_outlined,
+      DamageType.burst => Icons.auto_fix_high_outlined,
+      DamageType.corrosion => Icons.science_outlined,
+      DamageType.blockage => Icons.block_outlined,
       _ => Icons.build_outlined,
     };
   }
 
-  static String _formatType(String type) {
-    return switch (type.toLowerCase()) {
-      'leak' => DamageType.leak.label,
-      'burst' => DamageType.burst.label,
-      'corrosion' => DamageType.corrosion.label,
-      'blockage' => DamageType.blockage.label,
-      _ => DamageType.other.label,
-    };
-  }
+  static String _formatType(DamageType type) => type.label;
 
   static String _formatSavedTime(DateTime savedAt) {
     return DateFormatter.formatRelative(savedAt);

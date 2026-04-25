@@ -23,13 +23,13 @@ class SyncActionCard extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                AppColors.primary.withOpacity(0.05),
-                AppColors.primary.withOpacity(0.02),
+                AppColors.primaryOverlay05,
+                AppColors.primaryOverlay02,
               ],
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.primary.withOpacity(0.2),
+              color: AppColors.primaryOverlay20,
               width: 1,
             ),
           ),
@@ -41,7 +41,7 @@ class SyncActionCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primaryOverlay10,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
@@ -73,10 +73,9 @@ class SyncActionCard extends StatelessWidget {
                     ),
                     child: Text(
                       '$pendingCount',
-                      style: const TextStyle(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
                       ),
                     ),
                   ),

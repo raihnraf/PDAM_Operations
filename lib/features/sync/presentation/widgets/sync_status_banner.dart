@@ -14,13 +14,13 @@ class SyncStatusBanner extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             AppColors.accent,
-            AppColors.accent.withOpacity(0.8),
+            AppColors.accentOverlay80,
           ],
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppColors.accent.withOpacity(0.3),
+            color: AppColors.accentOverlay30,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -31,7 +31,7 @@ class SyncStatusBanner extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: AppColors.whiteOverlay20,
               shape: BoxShape.circle,
             ),
             child: const Icon(

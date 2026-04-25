@@ -53,14 +53,13 @@ class StepReview extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: severity.severityColor.withOpacity(0.15),
+                    color: severity.severityColor.withAlpha(38),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     severity.severityLabel,
-                    style: TextStyle(
+                    style: theme.textTheme.labelMedium?.copyWith(
                       color: severity.severityColor,
-                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

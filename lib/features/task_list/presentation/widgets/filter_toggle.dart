@@ -80,7 +80,7 @@ class _FilterButton extends StatelessWidget {
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.3),
+                    color: theme.colorScheme.primary.withAlpha(77),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -100,11 +100,10 @@ class _FilterButton extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 color: isActive
                     ? theme.colorScheme.onPrimary
                     : theme.colorScheme.onSurfaceVariant,
-                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),

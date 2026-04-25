@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/haptic_helper.dart';
 import '../bloc/damage_report_cubit.dart';
@@ -22,6 +23,7 @@ class StepDetails extends StatelessWidget {
             return TextFormField(
               initialValue: desc,
               maxLines: 4,
+              inputFormatters: [LengthLimitingTextInputFormatter(500)],
               decoration: InputDecoration(
                 labelText: 'Deskripsi Kerusakan',
                 hintText: 'Jelaskan detail kerusakan yang ditemukan...',
@@ -80,10 +82,9 @@ class StepDetails extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Capture Image',
-                  style: TextStyle(
+                  style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.primary,
                     fontWeight: FontWeight.w600,
-                    fontSize: 14,
                   ),
                 ),
               ],
@@ -102,9 +103,8 @@ class StepDetails extends StatelessWidget {
             Expanded(
               child: Text(
                 'Pastikan kerusakan terlihat jelas. Maks 5MB per foto.',
-                style: theme.textTheme.bodyMedium?.copyWith(
+                style: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 12,
                 ),
               ),
             ),

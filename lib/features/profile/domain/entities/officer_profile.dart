@@ -1,52 +1,18 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class OfficerProfile extends Equatable {
-  final String id;
-  final String name;
-  final String role;
-  final String unit;
-  final int tasksCompleted;
-  final int tasksThisWeek;
-  final int hoursInField;
-  final int efficiencyScore;
-  final bool isOnDuty;
+part 'officer_profile.freezed.dart';
 
-  const OfficerProfile({
-    required this.id,
-    required this.name,
-    required this.role,
-    required this.unit,
-    this.tasksCompleted = 0,
-    this.tasksThisWeek = 0,
-    this.hoursInField = 0,
-    this.efficiencyScore = 0,
-    this.isOnDuty = false,
-  });
-
-  @override
-  List<Object?> get props => [id, name, role, unit, tasksCompleted, tasksThisWeek, hoursInField, efficiencyScore, isOnDuty];
-
-  OfficerProfile copyWith({
-    String? id,
-    String? name,
-    String? role,
-    String? unit,
-    int? tasksCompleted,
-    int? tasksThisWeek,
-    int? hoursInField,
-    int? efficiencyScore,
-    bool? isOnDuty,
-  }) {
-    return OfficerProfile(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      role: role ?? this.role,
-      unit: unit ?? this.unit,
-      tasksCompleted: tasksCompleted ?? this.tasksCompleted,
-      tasksThisWeek: tasksThisWeek ?? this.tasksThisWeek,
-      hoursInField: hoursInField ?? this.hoursInField,
-      efficiencyScore: efficiencyScore ?? this.efficiencyScore,
-      isOnDuty: isOnDuty ?? this.isOnDuty,
-    );
-  }
+@freezed
+class OfficerProfile with _$OfficerProfile {
+  const factory OfficerProfile({
+    required String id,
+    required String name,
+    required String role,
+    required String unit,
+    @Default(0) int tasksCompleted,
+    @Default(0) int tasksThisWeek,
+    @Default(0) int hoursInField,
+    @Default(0) int efficiencyScore,
+    @Default(false) bool isOnDuty,
+  }) = _OfficerProfile;
 }

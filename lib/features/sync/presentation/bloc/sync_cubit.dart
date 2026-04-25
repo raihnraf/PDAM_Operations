@@ -6,10 +6,10 @@ import 'sync_state.dart';
 class SyncCubit extends Cubit<SyncState> {
   final SyncRepository repository;
 
-  SyncCubit(this.repository) : super(SyncInitial());
+  SyncCubit(this.repository) : super(const SyncState.initial());
 
   Future<void> loadData() async {
-    emit(SyncLoading());
+    emit(const SyncState.loading());
     try {
       final reportsResult = await repository.getPendingReports();
       final storageResult = await repository.getStorageUsageBytes();
@@ -23,12 +23,12 @@ class SyncCubit extends Cubit<SyncState> {
         (data) => data,
       );
 
-      emit(SyncLoaded(
+      emit(SyncState.loaded(
         pendingReports: reports,
         storageBytes: bytes,
       ));
     } catch (e) {
-      emit(const SyncError('Failed to load sync data'));
+      emit(const SyncState.error('Failed to load sync data'));
     }
   }
 
@@ -41,7 +41,7 @@ class SyncCubit extends Cubit<SyncState> {
     final result = await repository.syncAll();
     result.fold(
       (failure) {
-        emit(SyncLoaded(
+        emit(SyncState.loaded(
           pendingReports: currentState.pendingReports,
           storageBytes: currentState.storageBytes,
           isSyncing: false,
@@ -49,7 +49,7 @@ class SyncCubit extends Cubit<SyncState> {
         ));
       },
       (_) {
-        emit(SyncLoaded(
+        emit(SyncState.loaded(
           pendingReports: [],
           storageBytes: 0,
           isSyncing: false,

@@ -103,7 +103,7 @@ class SyncInfoRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: valueColor.withOpacity(0.1),
+            color: valueColor.withAlpha(26),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(

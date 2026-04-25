@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/utils/haptic_helper.dart';
@@ -25,6 +26,7 @@ class StepLocation extends StatelessWidget {
             final name = state is DamageReportFormUpdated ? state.reporterName : '';
             return TextFormField(
               initialValue: name,
+              inputFormatters: [LengthLimitingTextInputFormatter(100)],
               decoration: InputDecoration(
                 labelText: 'Nama Petugas',
                 hintText: 'Masukkan nama lengkap',
@@ -104,7 +106,7 @@ class StepLocation extends StatelessWidget {
                                 Icon(
                                   Icons.map,
                                   size: 48,
-                                  color: theme.colorScheme.primary.withOpacity(0.5),
+                                  color: theme.colorScheme.primary.withAlpha(128),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(

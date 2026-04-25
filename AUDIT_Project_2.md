@@ -143,81 +143,46 @@
   }
   ```
 
-### B4.2 — `Task` entity `copyWith` is not `const`-friendly
-- **Location:** `lib/features/task_map/domain/entities/task.dart:32-56`
-- **Severity:** 🟡 Minor
-- **Problem:** `copyWith` method could be simplified with the `freezed` package for less boilerplate and better immutability guarantees.
-- **Fix:** Consider adopting `freezed` for entities:
-  ```dart
-  @freezed
-  class Task with _$Task {
-    const factory Task({...}) = _Task;
-  }
+### ~~B4.2 — `Task` entity `copyWith` is not `const`-friendly~~ ✅ FIXED
+- ~~**Location:** `lib/features/task_map/domain/entities/task.dart:32-56`~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** `copyWith` method could be simplified with the `freezed` package for less boilerplate and better immutability guarantees.~~
+- ~~**Fix:** Adopted `freezed` package. `Task` entity now uses `@freezed` annotation with auto-generated `copyWith`, `==`, `hashCode`, and `toString`.~~
+
+### ~~B4.3 — `DamageReportCubit` stores mutable form state outside the state tree~~ ✅ FIXED
+- ~~**Location:** `lib/features/damage_report/presentation/bloc/damage_report_cubit.dart:12-19`~~
+- ~~**Severity:** 🟠 Major~~
+- ~~**Problem:** The cubit stores form fields (`_damageType`, `_severity`, `_description`, etc.) as private mutable variables instead of in the state. This breaks BLoC's unidirectional data flow and makes state inspection/devtools harder.~~
+- ~~**Fix:** All form data now lives in `DamageReportFormUpdated` state. No private mutable variables. Getters read from state tree.~~
   ```
 
-### B4.3 — `DamageReportCubit` stores mutable form state outside the state tree
-- **Location:** `lib/features/damage_report/presentation/bloc/damage_report_cubit.dart:12-19`
-- **Severity:** 🟠 Major
-- **Problem:** The cubit stores form fields (`_damageType`, `_severity`, `_description`, etc.) as private mutable variables instead of in the state. This breaks BLoC's unidirectional data flow and makes state inspection/devtools harder.
-- **Fix:** Move all form data into `DamageReportFormUpdated` state and use events for changes:
-  ```dart
-  // Use events: SetDamageType, SetSeverity, SetDescription, etc.
-  // State holds all form data
-  // Cubit maps events → new state
-  ```
-  Alternatively, if keeping Cubit pattern, at least make the state the single source of truth:
-  ```dart
-  void setDamageType(DamageType type) {
-    _damageType = type;
-    if (state is DamageReportFormUpdated) {
-      emit((state as DamageReportFormUpdated).copyWith(damageType: type));
-    }
-  }
-  ```
+### ~~B4.4 — `setState` used in `damage_report_page.dart` for step navigation~~ ✅ FIXED
+- ~~**Location:** `lib/features/damage_report/presentation/pages/damage_report_page.dart:190-201`~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** `_currentStep` is managed with `setState` in a StatefulWidget while the rest of the app uses BLoC. Inconsistent pattern.~~
+- ~~**Fix:** Page is now StatelessWidget; step navigation via `DamageReportCubit.goToNextStep()`/`goToPrevStep()`.~~
 
-### B4.4 — `setState` used in `damage_report_page.dart` for step navigation
-- **Location:** `lib/features/damage_report/presentation/pages/damage_report_page.dart:190-201`
-- **Severity:** 🟡 Minor
-- **Problem:** `_currentStep` is managed with `setState` in a StatefulWidget while the rest of the app uses BLoC. Inconsistent pattern.
-- **Fix:** Move `_currentStep` into the BLoC state:
-  ```dart
-  // Add currentStep to DamageReportFormUpdated
-  // Add goToNextStep(), goToPrevStep() methods to cubit
-  ```
+### ~~B4.5 — `TextEditingController` passed as props from page to step widgets~~ ✅ FIXED
+- ~~**Location:** `damage_report_page.dart:40-41`, `step_location.dart:9-10`, `step_details.dart:8-9`~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** Controllers are created in the page and passed down. The cubit also has `setReporterName()` and `setDescription()` but they're not connected to the controllers. This creates two sources of truth.~~
+- ~~**Fix:** No controllers passed as props. Step widgets use `initialValue` from BlocBuilder + `onChanged` → cubit setter.~~
 
-### B4.5 — `TextEditingController` passed as props from page to step widgets
-- **Location:** `damage_report_page.dart:40-41`, `step_location.dart:9-10`, `step_details.dart:8-9`
-- **Severity:** 🟡 Minor
-- **Problem:** Controllers are created in the page and passed down. The cubit also has `setReporterName()` and `setDescription()` but they're not connected to the controllers. This creates two sources of truth.
-- **Fix:** Either:
-  1. Use controllers only and read from them on submit, OR
-  2. Wire controllers to cubit via `onChanged`:
-     ```dart
-     onChanged: (value) => context.read<DamageReportCubit>().setReporterName(value),
-     ```
-
-### B4.6 — `onChanged` callbacks on step widgets are `setState(() {})` no-ops
-- **Location:** `damage_report_page.dart:140-141`, `damage_report_page.dart:144-145`
-- **Severity:** 🟡 Minor
-- **Problem:** `onChanged: (_) => setState(() {})` doesn't actually change any state — it's a pointless rebuild trigger.
-- **Fix:** Remove the `onChanged` parameter entirely or wire it to cubit as in B4.5.
+### ~~B4.6 — `onChanged` callbacks on step widgets are `setState(() {})` no-ops~~ ✅ FIXED
+- ~~**Location:** `damage_report_page.dart:140-141`, `damage_report_page.dart:144-145`~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** `onChanged: (_) => setState(() {})` doesn't actually change any state — it's a pointless rebuild trigger.~~
+- ~~**Fix:** `onChanged` now calls cubit setters (`setReporterName`, `setDescription`).~~
 
 ---
 
 ## 5. State Management
 
-### S5.1 — `ProfileCubit` doesn't use DI/repository pattern
-- **Location:** `lib/features/profile/presentation/bloc/profile_cubit.dart:5-29`
-- **Severity:** 🟡 Minor
-- **Problem:** `ProfileCubit` creates mock data directly instead of using a repository. All other cubits use repository injection.
-- **Fix:** Create `ProfileRepository` interface and mock implementation for consistency:
-  ```dart
-  class ProfileCubit extends Cubit<ProfileState> {
-    final ProfileRepository repository;
-    ProfileCubit(this.repository) : super(ProfileInitial());
-    Future<void> loadProfile() async { ... }
-  }
-  ```
+### ~~S5.1 — `ProfileCubit` doesn't use DI/repository pattern~~ ✅ FIXED
+- ~~**Location:** `lib/features/profile/presentation/bloc/profile_cubit.dart:5-29`~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** `ProfileCubit` creates mock data directly instead of using a repository. All other cubits use repository injection.~~
+- ~~**Fix:** `ProfileCubit` injects `ProfileRepository` abstract interface. `MockProfileRepository` provides mock data. DI registered in `profile_injection.dart`.~~
 
 ### ~~S5.2 — `TaskListCubit.getFilteredTasks()` reads state directly~~ ✅ FIXED
 - ~~**Location:** `lib/features/task_list/presentation/bloc/task_list_cubit.dart:31-44`~~
@@ -267,14 +232,11 @@
 - ~~**Problem:** When moving from mock to real, `SharedPreferences` stores data in plaintext. Reporter names, location data, and damage descriptions would need `flutter_secure_storage` for production.~~
 - ~~**Fix:** Plan to use `flutter_secure_storage` for sensitive fields when implementing real backend.~~
 
-### S6.3 — No input sanitization on form fields
-- **Location:** `step_location.dart:31-51`, `step_details.dart:26-48`
-- **Severity:** 🟡 Minor
-- **Problem:** `TextFormField` for reporter name and description have no `inputFormatters` or validation beyond length checks. Could accept XSS-like content if data is later displayed in a web view.
-- **Fix:** Add input formatters or sanitization:
-  ```dart
-  inputFormatters: [LengthLimitingTextInputFormatter(200)],
-  ```
+### ~~S6.3 — No input sanitization on form fields~~ ✅ FIXED
+- ~~**Location:** `step_location.dart:31-51`, `step_details.dart:26-48`~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** `TextFormField` for reporter name and description have no `inputFormatters` or validation beyond length checks. Could accept XSS-like content if data is later displayed in a web view.~~
+- ~~**Fix:** Added `LengthLimitingTextInputFormatter(100)` for reporter name and `LengthLimitingTextInputFormatter(500)` for description.~~
 
 ---
 
@@ -345,28 +307,22 @@
 - ~~**Severity:** ✅ Good~~
 - ~~**Observation:** Uses builder delegate for pending reports list.~~
 
-### S8.3 — Excessive `withOpacity` calls in widget trees
-- **Location:** `task_map_page.dart:134-137`, `profile_page.dart` (multiple), `sync_page.dart` (multiple), `task_card.dart` (multiple)
-- **Severity:** 🟡 Minor
-- **Problem:** `withOpacity()` creates new `Color` objects on every build. In deep widget trees, this causes unnecessary allocations.
-- **Fix:** Pre-compute opaque colors as constants:
-  ```dart
-  // Instead of:
-  Colors.black.withOpacity(0.04)
-  // Use:
-  static const _cardShadow = Color(0x0A000000); // 0x0A = 6% opacity
-  ```
+### ~~S8.3 — Excessive `withOpacity` calls in widget trees~~ ✅ FIXED
+- ~~**Location:** `task_map_page.dart:134-137`, `profile_page.dart` (multiple), `sync_page.dart` (multiple), `task_card.dart` (multiple)~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** `withOpacity()` creates new `Color` objects on every build. In deep widget trees, this causes unnecessary allocations.~~
+- ~~**Fix:** Added 20 pre-computed opacity constants to `AppColors` (e.g., `primaryOverlay10`, `blackOverlay06`, `whiteOverlay85`). Replaced 15+ static `withOpacity` calls across 10 files.~~
 
 ### ~~S8.4 — `MapController` created on every build of `_MapContentState`~~ ✅ No Issue
 - ~~**Location:** `lib/features/task_map/presentation/pages/task_map_page.dart:58`~~
 - ~~**Severity:** ✅ Good~~
 - ~~**Observation:** `MapController` is a field in `State`, so it's created once. No issue.~~
 
-### S8.5 — `IndexedStack` preserves state but keeps all pages in memory
-- **Location:** `lib/features/home/presentation/pages/home_shell.dart:32`
-- **Severity:** 🟡 Minor
-- **Problem:** All 4 tab pages are kept alive simultaneously. For a small app this is fine, but will be a concern as features grow.
-- **Fix:** For future scaling, consider lazy-loading tabs or using `AutomaticKeepAliveClientMixin` selectively.
+### ~~S8.5 — `IndexedStack` preserves state but keeps all pages in memory~~ ✅ FIXED
+- ~~**Location:** `lib/features/home/presentation/pages/home_shell.dart:32`~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** All 4 tab pages are kept alive simultaneously. For a small app this is fine, but will be a concern as features grow.~~
+- ~~**Fix:** Added detailed documentation comment explaining tradeoffs and migration paths. Added `ConstrainedBox` with `maxContentWidth` for tablet/large screen support.~~
 
 ### ~~S8.6 — `Opacity` widget not used; `withOpacity` on colors is fine~~ ✅ No Issue
 - ~~**Severity:** ✅ Good~~
@@ -395,28 +351,17 @@
     ),
   ```
 
-### S9.2 — `DamageReportCubit` uses `0` as sentinel for missing location
-- **Location:** `lib/features/damage_report/presentation/bloc/damage_report_cubit.dart:89`
-- **Severity:** 🟡 Minor
-- **Problem:** `hasLocation => _latitude != 0 || _longitude != 0` — `0, 0` is a valid coordinate (Gulf of Guinea). Using `0` as "unset" is fragile.
-- **Fix:** Use nullable types:
-  ```dart
-  double? _latitude;
-  double? _longitude;
-  bool get hasLocation => _latitude != null && _longitude != null;
-  ```
+### ~~S9.2 — `DamageReportCubit` uses `0` as sentinel for missing location~~ ✅ FIXED
+- ~~**Location:** `lib/features/damage_report/presentation/bloc/damage_report_cubit.dart:89`~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** `hasLocation => _latitude != 0 || _longitude != 0` — `0, 0` is a valid coordinate (Gulf of Guinea). Using `0` as "unset" is fragile.~~
+- ~~**Fix:** State uses `double?` nullable types. `hasLocation` checks `latitude != null && longitude != null`.~~
 
-### S9.3 — `PendingReport.type` is `String` instead of enum
-- **Location:** `lib/features/sync/domain/entities/pending_report.dart:5`
-- **Severity:** 🟡 Minor
-- **Problem:** `type` is a `String` but represents `DamageType`. Using strings loses type safety and requires switch-based mapping everywhere.
-- **Fix:** Use the enum:
-  ```dart
-  class PendingReport extends Equatable {
-    final DamageType type; // instead of String
-    // ...
-  }
-  ```
+### ~~S9.3 — `PendingReport.type` is `String` instead of enum~~ ✅ FIXED
+- ~~**Location:** `lib/features/sync/domain/entities/pending_report.dart:5`~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** `type` is a `String` but represents `DamageType`. Using strings loses type safety and requires switch-based mapping everywhere.~~
+- ~~**Fix:** Changed to `DamageType type`. Updated `mock_sync_repository.dart` and `sync_pending_card.dart` to use enum directly.~~
 
 ### ~~S9.4 — `AppTextStyles.caption` has hardcoded `Colors.grey`~~ ✅ FIXED (duplicate of C2.3)
 - ~~**Location:** `lib/core/constants/app_text_styles.dart:67`~~
@@ -434,14 +379,11 @@
 - ~~**Problem:** `flutter_lints: ^4.0.0` is the default. No `analysis_options.yaml` customization found.~~
 - ~~**Fix:** `analysis_options.yaml` created with stricter lint rules.~~
 
-### S10.2 — `intl: ^0.19.0` may conflict with Flutter SDK
-- **Location:** `pubspec.yaml:33`
-- **Severity:** 🟡 Minor
-- **Problem:** `intl` is a transitive dependency of Flutter SDK. Pinning `^0.19.0` could cause version conflicts with future Flutter SDK updates.
-- **Fix:** Use `any` or match Flutter SDK's bundled version:
-  ```yaml
-  intl: any  # or remove and use SDK's bundled version
-  ```
+### ~~S10.2 — `intl: ^0.19.0` may conflict with Flutter SDK~~ ✅ FIXED
+- ~~**Location:** `pubspec.yaml:33`~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** `intl` is a transitive dependency of Flutter SDK. Pinning `^0.19.0` could cause version conflicts with future Flutter SDK updates.~~
+- ~~**Fix:** Changed to `intl: any` to let Flutter SDK manage the version.~~
 
 ### ~~S10.3 — Unused `bloc_test` and `mocktail` in dev_dependencies~~ ✅ FIXED
 - ~~**Location:** `pubspec.yaml:40-41`~~
@@ -471,26 +413,17 @@
   )
   ```
 
-### S11.2 — Hardcoded font sizes don't respect system text scale
-- **Location:** Multiple files (e.g., `task_card.dart:298`, `navigate_to_site_card.dart:340`)
-- **Severity:** 🟡 Minor
-- **Problem:** `TextStyle(fontSize: 11)` and similar hardcoded sizes won't scale with user's accessibility settings.
-- **Fix:** Use `MediaQuery.textScalerOf(context).scale()` or rely on `Theme.textTheme` which handles scaling.
+### ~~S11.2 — Hardcoded font sizes don't respect system text scale~~ ✅ FIXED
+- ~~**Location:** Multiple files (e.g., `task_card.dart:298`, `navigate_to_site_card.dart:340`)~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** `TextStyle(fontSize: 11)` and similar hardcoded sizes won't scale with user's accessibility settings.~~
+- ~~**Fix:** Replaced 18 hardcoded `fontSize` instances with `Theme.textTheme` styles (`labelSmall`, `labelMedium`, `bodyMedium`) across 10 files.~~
 
-### S11.3 — No responsive design considerations
-- **Location:** Throughout the project
-- **Severity:** 🟡 Minor
-- **Problem:** All layouts assume a standard phone screen. No use of `LayoutBuilder`, `MediaQuery`, or responsive breakpoints.
-- **Fix:** For tablet support, consider:
-  ```dart
-  LayoutBuilder(
-    builder: (context, constraints) {
-      if (constraints.maxWidth > 600) {
-        // Tablet layout
-      }
-    },
-  )
-  ```
+### ~~S11.3 — No responsive design considerations~~ ✅ FIXED
+- ~~**Location:** Throughout the project~~
+- ~~**Severity:** 🟡 Minor~~
+- ~~**Problem:** All layouts assume a standard phone screen. No use of `LayoutBuilder`, `MediaQuery`, or responsive breakpoints.~~
+- ~~**Fix:** Created `AppBreakpoints` utility in `core/utils/responsive.dart` with phone/tablet/desktop breakpoints and helper methods. Applied `ConstrainedBox` with `maxContentWidth` to `HomeShell` for tablet support.~~
 
 ### ~~S11.4 — Loading, empty, and error states handled well~~ ✅ No Issue
 - ~~**Severity:** ✅ Good~~
@@ -545,41 +478,44 @@
 
 ## Summary
 
-### Overall Code Health Score: **93/100** (up from 91)
+### Overall Code Health Score: **98/100** (up from 93)
 
 | Category | Score | Notes |
 |----------|-------|-------|
 | Folder & File Structure | 95/100 | All files under 300 lines; clean widget extraction |
-| Clean Code & Readability | 90/100 | All strings centralized in AppStrings |
-| DRY & Reusability | 85/100 | Shared widgets in core/widgets/ |
-| Flutter Best Practices | 80/100 | Good const usage; BLoC pattern inconsistencies remain |
-| State Management | 70/100 | BLoC used consistently but with some anti-patterns |
-| Security | 90/100 | No hardcoded secrets; SecureStorage added |
-| Error Handling | 85/100 | Result pattern used well; global error handler added |
-| Performance | 80/100 | Good use of builders; minor opacity optimization opportunities |
-| Null Safety | 75/100 | Mostly safe, but sentinel values and `!` operator concerns |
-| Dependencies | 85/100 | Clean pubspec; analysis_options.yaml with strict rules |
-| UI/UX & Accessibility | 70/100 | Semantics added; hardcoded sizes and no responsive design remain |
+| Clean Code & Readability | 95/100 | All strings centralized; BLoC anti-patterns resolved |
+| DRY & Reusability | 90/100 | Shared widgets in core/widgets/; freezed for entities |
+| Flutter Best Practices | 95/100 | Const usage; BLoC pattern consistent; freezed adoption |
+| State Management | 90/100 | BLoC used consistently; state is single source of truth |
+| Security | 95/100 | No hardcoded secrets; SecureStorage added; input sanitization |
+| Error Handling | 90/100 | Result pattern used well; global error handler added |
+| Performance | 90/100 | Good use of builders; pre-computed opacity constants |
+| Null Safety | 90/100 | Nullable types; no sentinel values |
+| Dependencies | 90/100 | Clean pubspec; analysis_options.yaml; freezed + build_runner |
+| UI/UX & Accessibility | 85/100 | Semantics added; Theme text styles; responsive breakpoints |
 | Testing | 70/100 | Test suite exists with proper folder structure |
 
 ---
 
-### Top 3 Most Urgent Fixes
+### ~~Top 3 Most Urgent Fixes~~ ✅ ALL RESOLVED
 
-1. **🟡 Fix `DamageReportCubit` mutable form state (B4.3)**
-   - Form fields stored as private mutable variables instead of in the state tree.
+1. ~~**🟡 Fix `DamageReportCubit` mutable form state (B4.3)**~~ ✅ FIXED
+   - ~~Form fields stored as private mutable variables instead of in the state tree.~~
+   - All form data now in `DamageReportFormUpdated` state; getters read from state tree.
 
-2. **🟡 Fix `ProfileCubit` DI/repository pattern (S5.1)**
-   - Creates mock data directly instead of using repository injection.
+2. ~~**🟡 Fix `ProfileCubit` DI/repository pattern (S5.1)**~~ ✅ FIXED
+   - ~~Creates mock data directly instead of using repository injection.~~
+   - `ProfileCubit` injects `ProfileRepository`; `MockProfileRepository` provides data.
 
-3. **🟡 Fix `PendingReport.type` String instead of enum (S9.3)**
-   - Loses type safety; requires switch-based mapping everywhere.
+3. ~~**🟡 Fix `PendingReport.type` String instead of enum (S9.3)**~~ ✅ FIXED
+   - ~~Loses type safety; requires switch-based mapping everywhere.~~
+   - Changed to `DamageType type`; simplified switch statements.
 
 ---
 
 ### Architecture Recommendations for Future Development
 
-1. **Adopt `freezed` for entities and states** — Eliminates boilerplate `copyWith`, `equals`, `hashCode`, and `toString`. Makes immutability explicit.
+1. ~~**Adopt `freezed` for entities and states**~~ ✅ DONE — `Task` entity migrated to `@freezed`. Consider migrating other entities/states.
 
 2. **Introduce BLoC events** — `DamageReportCubit` should be converted to a full `Bloc` with events (`SetDamageType`, `SetSeverity`, `SubmitReport`) for better traceability and devtools support.
 
@@ -594,3 +530,5 @@
 7. **Add crash reporting** — Integrate `firebase_crashlytics` or `sentry_flutter` with `FlutterError.onError` and `runZonedGuarded` for production monitoring.
 
 8. **Implement proper offline sync strategy** — Current mock uses `SharedPreferences`. For production, consider `isar` or `drift` (SQLite) for structured offline storage with conflict resolution.
+
+9. **Expand responsive design** — `AppBreakpoints` utility created. Apply `ConstrainedBox` pattern to remaining pages (SyncPage, ProfilePage, TaskListPage) for tablet support.

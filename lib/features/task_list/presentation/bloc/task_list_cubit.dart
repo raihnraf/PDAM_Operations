@@ -6,18 +6,18 @@ import 'task_list_state.dart';
 class TaskListCubit extends Cubit<TaskListState> {
   final TaskRepository repository;
 
-  TaskListCubit(this.repository) : super(TaskListInitial());
+  TaskListCubit(this.repository) : super(const TaskListState.initial());
 
   Future<void> loadTasks() async {
-    emit(TaskListLoading());
+    emit(const TaskListState.loading());
     final result = await repository.getTasks();
     result.fold(
-      (failure) => emit(const TaskListError('Gagal memuat tugas')),
+      (failure) => emit(const TaskListState.error('Gagal memuat tugas')),
       (tasks) {
         final currentFilter = state is TaskListLoaded
             ? (state as TaskListLoaded).activeFilter
             : TaskFilter.pending;
-        emit(TaskListLoaded(tasks: tasks, activeFilter: currentFilter));
+        emit(TaskListState.loaded(tasks: tasks, activeFilter: currentFilter));
       },
     );
   }
@@ -53,7 +53,7 @@ class TaskListCubit extends Cubit<TaskListState> {
     result.fold(
       (failure) {
         emit(current.copyWith(actingTaskId: null));
-        emit(TaskListError('Gagal menyelesaikan tugas'));
+        emit(const TaskListState.error('Gagal menyelesaikan tugas'));
       },
       (_) => loadTasks(),
     );
@@ -69,7 +69,7 @@ class TaskListCubit extends Cubit<TaskListState> {
     result.fold(
       (failure) {
         emit(current.copyWith(actingTaskId: null));
-        emit(TaskListError('Gagal melakukan eskalasi'));
+        emit(const TaskListState.error('Gagal melakukan eskalasi'));
       },
       (_) => loadTasks(),
     );
@@ -77,7 +77,7 @@ class TaskListCubit extends Cubit<TaskListState> {
 
   void clearError() {
     if (state is TaskListError) {
-      emit(TaskListInitial());
+      emit(const TaskListState.initial());
     }
   }
 }

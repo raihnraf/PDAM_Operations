@@ -1,32 +1,15 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/task.dart';
 
-sealed class TaskMapState extends Equatable {
-  const TaskMapState();
+part 'task_map_state.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
-}
-
-class TaskMapInitial extends TaskMapState {}
-
-class TaskMapLoading extends TaskMapState {}
-
-class TaskMapLoaded extends TaskMapState {
-  final List<Task> tasks;
-  final String? selectedTaskId;
-
-  const TaskMapLoaded({this.tasks = const [], this.selectedTaskId});
-
-  @override
-  List<Object?> get props => [tasks, selectedTaskId];
-}
-
-class TaskMapError extends TaskMapState {
-  final String message;
-
-  const TaskMapError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+@freezed
+class TaskMapState with _$TaskMapState {
+  const factory TaskMapState.initial() = TaskMapInitial;
+  const factory TaskMapState.loading() = TaskMapLoading;
+  const factory TaskMapState.loaded({
+    @Default([]) List<Task> tasks,
+    String? selectedTaskId,
+  }) = TaskMapLoaded;
+  const factory TaskMapState.error(String message) = TaskMapError;
 }

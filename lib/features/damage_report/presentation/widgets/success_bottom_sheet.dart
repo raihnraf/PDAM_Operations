@@ -21,7 +21,7 @@ class SuccessBottomSheet extends StatelessWidget {
             Container(
               padding: AppSpacing.allMd,
               decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
+                color: AppColors.successOverlay10,
                 shape: BoxShape.circle,
               ),
               child: const Icon(

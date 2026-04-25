@@ -42,9 +42,8 @@ class OfflineBanner extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Laporan akan disimpan lokal dan disinkronisasi otomatis saat terhubung.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
+                  style: theme.textTheme.labelMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: 12,
                   ),
                 ),
               ],

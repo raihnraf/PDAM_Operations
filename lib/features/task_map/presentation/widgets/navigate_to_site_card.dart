@@ -31,12 +31,12 @@ class NavigateToSiteCard extends StatelessWidget {
           color: theme.colorScheme.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: statusConfig.borderColor.withOpacity(0.3),
+            color: statusConfig.borderColor.withAlpha(77),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: AppColors.blackOverlay10,
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -87,10 +87,9 @@ class NavigateToSiteCard extends StatelessWidget {
                         _showNavigateDialog(context);
                       },
                       icon: const Icon(Icons.navigation, size: 20),
-                      label: const Text(
+                      label: Text(
                         AppStrings.navigateToSite,
-                        style: TextStyle(
-                          fontSize: 15,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
                         ),
@@ -241,7 +240,7 @@ class _NotesPreview extends StatelessWidget {
         color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.3),
+          color: theme.colorScheme.outlineVariant.withAlpha(77),
         ),
       ),
       child: Row(

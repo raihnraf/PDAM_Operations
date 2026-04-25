@@ -18,9 +18,8 @@ class TaskInfoChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Text(
       label,
-      style: TextStyle(
+      style: Theme.of(context).textTheme.labelMedium?.copyWith(
         color: color,
-        fontSize: 12,
         fontWeight: FontWeight.w500,
       ),
       maxLines: expandLabel ? 1 : null,
@@ -29,7 +28,7 @@ class TaskInfoChip extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(icon, size: 14, color: color.withOpacity(0.7)),
+        Icon(icon, size: 14, color: color.withAlpha(179)),
         const SizedBox(width: 4),
         if (expandLabel) Expanded(child: text) else text,
       ],

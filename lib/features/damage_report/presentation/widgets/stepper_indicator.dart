@@ -102,7 +102,7 @@ class _StepCircle extends StatelessWidget {
             boxShadow: isCurrent
                 ? [
                     BoxShadow(
-                      color: theme.colorScheme.primary.withOpacity(0.3),
+                      color: theme.colorScheme.primary.withAlpha(77),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -112,11 +112,10 @@ class _StepCircle extends StatelessWidget {
           child: Center(
             child: Text(
               '$step',
-              style: TextStyle(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 color: isActiveOrCurrent
                     ? theme.colorScheme.onPrimary
                     : theme.colorScheme.onSurfaceVariant,
-                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -125,11 +124,10 @@ class _StepCircle extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           label,
-          style: TextStyle(
+          style: theme.textTheme.labelMedium?.copyWith(
             color: isActiveOrCurrent
                 ? theme.colorScheme.onSurface
                 : theme.colorScheme.onSurfaceVariant,
-            fontSize: 12,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.8,
           ),

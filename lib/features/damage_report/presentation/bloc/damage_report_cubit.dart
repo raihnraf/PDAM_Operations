@@ -7,7 +7,7 @@ import 'damage_report_state.dart';
 class DamageReportCubit extends Cubit<DamageReportState> {
   final DamageReportRepository repository;
 
-  DamageReportCubit(this.repository) : super(DamageReportInitial());
+  DamageReportCubit(this.repository) : super(const DamageReportState.initial());
 
   void setDamageType(DamageType type) {
     _emitIfForm((s) => s.copyWith(damageType: type));
@@ -146,13 +146,13 @@ class DamageReportCubit extends Cubit<DamageReportState> {
   Future<void> submitReport() async {
     final validationError = validate();
     if (validationError != null) {
-      emit(DamageReportError(validationError));
+      emit(DamageReportState.error(validationError));
       return;
     }
 
     final formState = state as DamageReportFormUpdated;
 
-    emit(DamageReportLoading());
+    emit(const DamageReportState.loading());
 
     final report = DamageReport(
       id: const Uuid().v4(),
@@ -169,18 +169,18 @@ class DamageReportCubit extends Cubit<DamageReportState> {
 
     final result = await repository.saveReport(report);
     result.fold(
-      (failure) => emit(DamageReportError(failure.message)),
-      (saved) => emit(DamageReportSaved(saved)),
+      (failure) => emit(DamageReportState.error(failure.message)),
+      (saved) => emit(DamageReportState.saved(saved)),
     );
   }
 
   void reset() {
-    emit(DamageReportInitial());
+    emit(const DamageReportState.initial());
   }
 
   void clearError() {
     if (state is DamageReportError) {
-      emit(DamageReportInitial());
+      emit(const DamageReportState.initial());
     }
   }
 }

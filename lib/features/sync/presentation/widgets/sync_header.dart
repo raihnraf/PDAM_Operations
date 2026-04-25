@@ -15,7 +15,7 @@ class SyncHeader extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             AppColors.primary,
-            AppColors.primary.withOpacity(0.7),
+            AppColors.primaryOverlay75,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -26,7 +26,7 @@ class SyncHeader extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primaryOverlay30,
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -37,7 +37,7 @@ class SyncHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: AppColors.whiteOverlay20,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -60,7 +60,7 @@ class SyncHeader extends StatelessWidget {
               Text(
                 AppStrings.syncSubtitle,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.white.withOpacity(0.8),
+                  color: AppColors.whiteOverlay80,
                 ),
               ),
             ],

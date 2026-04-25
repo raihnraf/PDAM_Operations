@@ -29,11 +29,11 @@ class TaskCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+          color: theme.colorScheme.outlineVariant.withAlpha(128),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: AppColors.blackOverlay06,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -138,7 +138,7 @@ class TaskCard extends StatelessWidget {
         color: statusConfig.bgColor,
         border: Border(
           bottom: BorderSide(
-            color: statusConfig.bgColor.withOpacity(0.5),
+            color: statusConfig.bgColor.withAlpha(128),
             width: 1,
           ),
         ),
@@ -227,7 +227,7 @@ class _NotesCard extends StatelessWidget {
         color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.3),
+          color: theme.colorScheme.outlineVariant.withAlpha(77),
         ),
       ),
       child: Row(

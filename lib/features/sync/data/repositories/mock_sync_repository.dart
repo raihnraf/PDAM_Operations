@@ -4,7 +4,6 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/secure_storage.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../damage_report/domain/entities/damage_report.dart';
-import '../../../damage_report/domain/entities/damage_report_labels.dart';
 import '../../domain/entities/pending_report.dart';
 import '../../domain/repositories/sync_repository.dart';
 
@@ -25,7 +24,7 @@ class MockSyncRepository implements SyncRepository {
       final reports = jsonList
           .map((j) => PendingReport(
                 id: j['id'] as String,
-                type: _parseDamageType(j['damageType'] as String).label,
+                type: _parseDamageType(j['damageType'] as String),
                 title: _buildTitle(j),
                 savedAt: DateTime.parse(j['reportedAt'] as String),
               ))
@@ -66,19 +65,19 @@ class MockSyncRepository implements SyncRepository {
   List<PendingReport> _defaultPendingReports() => [
         PendingReport(
           id: 'DR-001',
-          type: 'Kebocoran',
+          type: DamageType.leak,
           title: 'Pipa Bocor di Jl. Raya Gubeng No. 42',
           savedAt: DateTime(2026, 4, 24, 14, 32),
         ),
         PendingReport(
           id: 'DR-002',
-          type: 'Pipa Pecah',
+          type: DamageType.burst,
           title: 'Pipa Utama Pecah - Perumahan PAM Surabaya',
           savedAt: DateTime(2026, 4, 24, 11, 15),
         ),
         PendingReport(
           id: 'DR-003',
-          type: 'Korosi',
+          type: DamageType.corrosion,
           title: 'Korosi Parah pada Valve V-8942 Kec. Wonokromo',
           savedAt: DateTime(2026, 4, 23, 16, 45),
         ),
